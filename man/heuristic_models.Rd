@@ -10,13 +10,13 @@
 
 
 \usage{
-heuristic_models(Dy, var_channel, var_conv, var_value)
+heuristic_models(Data, var_path, var_conv, var_value=NULL)
 }
 
 
 \arguments{
-  \item{Dy}{data.frame containing paths and conversions.}
-  \item{var_channel}{name of the the column containing paths.}
+  \item{Data}{data.frame containing paths and conversions.}
+  \item{var_path}{name of the the column containing paths.}
   \item{var_conv}{name of the column containing total conversions.}
   \item{var_value}{name of the column containing total conversion value.}
 }
@@ -33,15 +33,13 @@ heuristic_models(Dy, var_channel, var_conv, var_value)
 
 data(PathData) 
 
-heuristic_models(Dy, "channel_path", "total_conversions", "total_conversion_value")
+#uncomment the following lines to run the examples
+
+#heuristic_models(Data,"path","total_conversions")
+#heuristic_models(Data,"path","total_conversions",var_value="total_conversion_value")
 
 }
 
-
-\keyword{online attribution}
-\keyword{channel attribution}
-\keyword{multi channel funnel}
-\keyword{attribution problem}
 \keyword{first touch}
 \keyword{last touch}
 \keyword{linear touch}
