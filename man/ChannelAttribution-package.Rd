@@ -19,8 +19,8 @@ For customizations or interest in other statistical methodologies for web data a
 \tabular{ll}{
 Package: \tab ChannelAttribution\cr
 Type: \tab Package\cr
-Version: \tab 1.2\cr
-Date: \tab 2015-10-09\cr
+Version: \tab 1.3\cr
+Date: \tab 2015-12-03\cr
 License: \tab GPL (>= 2)\cr
 }
  Package contains two functions: markov_model which estimates a k-order Markov model and heuristic_model which estimates three heuristic models (first-touch, last-touch and linear-touch) from customer journey data. 
@@ -28,7 +28,7 @@ License: \tab GPL (>= 2)\cr
 
 \author{
 
-Davide Altomare and David Loris
+Davide Altomare
 
 Maintainer Davide Altomare <davide.altomare@gmail.com>
 
@@ -36,7 +36,7 @@ Maintainer Davide Altomare <davide.altomare@gmail.com>
 
 \references{
 
-Davide Altomare, David Loris (2015). \href{http://www.slideshare.net/adavide1982/markov-model-for-the-multichannel-attribution-problem}{Markov Model for the Online Multi-Channel Attribution Problem}. 
+Davide Altomare (2015). \href{http://www.slideshare.net/adavide1982/markov-model-for-the-multichannel-attribution-problem}{Markov Model for the Online Multi-Channel Attribution Problem}. 
 
 Eva Anderl, Ingo Becker, Florian v. Wangenheim, Jan H. Schumann. Mapping the Customer Journey (2014). A Graph-Based Framework for Online Attribution Modeling.
 
