@@ -19,8 +19,8 @@ For customizations or interest in other statistical methodologies for web data a
 \tabular{ll}{
 Package: \tab ChannelAttribution\cr
 Type: \tab Package\cr
-Version: \tab 1.3\cr
-Date: \tab 2015-12-03\cr
+Version: \tab 1.4\cr
+Date: \tab 2016-01-08\cr
 License: \tab GPL (>= 2)\cr
 }
  Package contains two functions: markov_model which estimates a k-order Markov model and heuristic_model which estimates three heuristic models (first-touch, last-touch and linear-touch) from customer journey data. 

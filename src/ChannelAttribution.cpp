@@ -836,6 +836,12 @@ RcppExport SEXP markov_model_cpp(SEXP Data_p, SEXP var_path_p, SEXP var_conv_p, 
    c=S.sim(c,vunif[iu]);
    ++iu;
    
+   if(c==nchannels_sim-2){ //se ho raggiunto lo stato conversion interrompo
+    goto go_to_conv;	
+   }else if(c==nchannels_sim-1){ //se ho raggiunto lo stato null interrompo
+	goto go_to_null;   
+   }
+   
    if(order==1){
 	C[c]=1; //flaggo con 1 il canale visitato   
    }else{	   
@@ -843,13 +849,7 @@ RcppExport SEXP markov_model_cpp(SEXP Data_p, SEXP var_path_p, SEXP var_conv_p, 
      C[mp_channels_sim_id[c][k]]=1;
     }
    }
-   
-   if(c==nchannels_sim-2){ //se ho raggiunto lo stato conversion interrompo
-    goto go_to_conv;	
-   }else if(c==nchannels_sim-1){ //se ho raggiunto lo stato null interrompo
-	goto go_to_null;   
-   }	   
-   
+      
    c_last=c; //salvo il canale visitato
    ++npassi;
  

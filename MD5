@@ -1,12 +1,12 @@
-babb581397045db6a7fe8a4a2504645b *DESCRIPTION
+8b2d250b01a35006e9119d73e9ab029e *DESCRIPTION
 e8d8a50c7101eb45f522bea26d4ad68e *NAMESPACE
 e925e10d8cbc07de2a984366c62a2c82 *R/ChannelAttribution.R
 cb19b1555bffc631df81a901c9a332c4 *data/PathData.rda
-97a04e36105dceadf5c5ab5b656ff963 *man/ChannelAttribution-package.Rd
+42228a7f0b3cb0f47f2d701645cf36dd *man/ChannelAttribution-package.Rd
 c20611f96f1f6b0c724fe7c7e464dd2a *man/Data.Rd
 c094f974175fb7c17cfdfd7cd96e8363 *man/heuristic_models.Rd
 a42469995afbd3028d484c9bf93a90d3 *man/markov_model.Rd
-0c0cb8269e83ec806b5d4efb08e8ab8f *src/ChannelAttribution.cpp
+2f1247c52da73d2d9cdc2e9f7571b40c *src/ChannelAttribution.cpp
 9ed103a42e664ad4d876f5a7b6c26130 *src/ChannelAttribution.h
 cf388712fd769e776751f9faaf43fbc4 *src/Makevars
 ec4b5eec30e4daadcd71498caa7579c5 *src/Makevars.win
