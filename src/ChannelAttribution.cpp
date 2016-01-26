@@ -743,7 +743,9 @@ RcppExport SEXP markov_model_cpp(SEXP Data_p, SEXP var_path_p, SEXP var_conv_p, 
   
   next_path:;
     
-  fP.add(0,npassi,vpi); 
+  if(vpi>0){  
+   fP.add(0,npassi,vpi); 
+  }
  
  }//end for 
         
