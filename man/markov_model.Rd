@@ -11,7 +11,7 @@
 
 \usage{
 markov_model(Data, var_path, var_conv, var_value=NULL, var_null=NULL, 
-             order=1, nsim=1e+06, n_boot=1e+06, n_single_boot=30, out_more=FALSE)
+             order=1, nsim=NULL, max_step=NULL, out_more=FALSE)
 }
 
 
@@ -22,9 +22,8 @@ markov_model(Data, var_path, var_conv, var_value=NULL, var_null=NULL,
   \item{var_value}{name of the column containing total conversion value.}
   \item{var_null}{name of the column containing total paths that do not lead to conversions.}
   \item{order}{order of Markov Model.}
-  \item{nsim}{number of total simulations from transition matrix.}
-  \item{n_boot}{number of bootstrap samples from the empirical distribution of the maxium number of steps between channels.}
-  \item{n_single_boot}{dimension of the bootstrap sample.}
+  \item{nsim}{total simulations from transition matrix.}
+  \item{max_step}{maximum number of steps for a single simulated path.}
   \item{out_more}{if TRUE returns the transition probabilities between channels and removal effects.}
 }
 

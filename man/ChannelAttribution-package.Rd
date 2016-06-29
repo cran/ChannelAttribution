@@ -12,15 +12,14 @@ Advertisers use a variety of online marketing channels to reach consumers and th
 This package provides a function that approaches the attribution problem in a probabilistic way. It uses a k-order Markov representation to identifying structural correlations in the customer journey data. This would allow advertisers to give a more reliable assessment of the marketing contribution of each channel. 
 The approach basically follows the one presented in Eva Anderl, Ingo Becker, Florian v. Wangenheim, Jan H. Schumann (2014). Differently for them, we solved the estimation process using stochastic simulations. In this way it is also possible to take into account conversion values and their variability in the computation of the channel importance. 
 The package also contains a function that estimates three heuristic models (first-touch, last-touch and linear-touch approach) for the same problem.
-For customizations or interest in other statistical methodologies for web data analysis please contact <davide.altomare@gmail.com>.
 }
 
 \details{
 \tabular{ll}{
 Package: \tab ChannelAttribution\cr
 Type: \tab Package\cr
-Version: \tab 1.5\cr
-Date: \tab 2016-01-20\cr
+Version: \tab 1.6\cr
+Date: \tab 2016-06-29\cr
 License: \tab GPL (>= 2)\cr
 }
  Package contains two functions: markov_model which estimates a k-order Markov model and heuristic_model which estimates three heuristic models (first-touch, last-touch and linear-touch) from customer journey data. 

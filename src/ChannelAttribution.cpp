@@ -324,10 +324,9 @@ List Fx::tran_matx(vector<string> vchannels)
 }
 
 
-RcppExport SEXP markov_model_cpp(SEXP Data_p, SEXP var_path_p, SEXP var_conv_p, SEXP var_value_p, SEXP var_null_p, SEXP order_p, SEXP nsim_p, SEXP n_boot_p, SEXP n_single_boot_p, SEXP out_more_p)
+RcppExport SEXP markov_model_cpp(SEXP Data_p, SEXP var_path_p, SEXP var_conv_p, SEXP var_value_p, SEXP var_null_p, SEXP order_p, SEXP nsim_p, SEXP max_step_p, SEXP out_more_p)
 {
-	
- 	
+	 	
  BEGIN_RCPP
 
  //inp.a
@@ -352,11 +351,8 @@ RcppExport SEXP markov_model_cpp(SEXP Data_p, SEXP var_path_p, SEXP var_conv_p, 
  NumericVector nsim_0(nsim_p); 
  long long int nsim = Rcpp::as<long long int>(nsim_0);
 
- NumericVector n_boot_0(n_boot_p); 
- long long int n_boot = Rcpp::as<long long int>(n_boot_0);
-
- NumericVector n_single_boot_0(n_single_boot_p); 
- long long int n_single_boot = Rcpp::as<long long int>(n_single_boot_0);
+ NumericVector max_step_0(max_step_p); 
+ long long int max_step = Rcpp::as<long long int>(max_step_0);
 
  NumericVector out_more_0(out_more_p); 
  long long int out_more = Rcpp::as<long long int>(out_more_0);
@@ -407,9 +403,7 @@ RcppExport SEXP markov_model_cpp(SEXP Data_p, SEXP var_path_p, SEXP var_conv_p, 
  //////////////////////
  //CODIFICA DA ONE STEP 
  //////////////////////
-   
- unsigned long int max_npassi=0; 
- 
+    
  //mappa dei conversion value
  unsigned long int l_vui=0;
  map<double,unsigned long int> mp_vui;
@@ -609,7 +603,6 @@ RcppExport SEXP markov_model_cpp(SEXP Data_p, SEXP var_path_p, SEXP var_conv_p, 
   
   vy2[i]=path+"e"; //aggiungo lo stato finale
   ++npassi;
-  max_npassi=max(max_npassi,npassi);
  
  }//end for
       
@@ -651,21 +644,20 @@ RcppExport SEXP markov_model_cpp(SEXP Data_p, SEXP var_path_p, SEXP var_conv_p, 
  ////////////////////////////////////////////////////
 
  unsigned long int ichannel,ichannel_old,vpi,vci,vni; 
-	 
+ string channel_old;
+ 
  npassi=0;
  
  Fx S(nchannels_sim,nchannels_sim);
   
  Fx fV(nchannels_sim,l_vui);
  
- max_npassi=max_npassi+1; //considero il fatto che l'indicizzazione parte da 0
- Fx fP(1,max_npassi);
-
  ichannel_old=0;
  ichannel=0;
- 
+ channel_old="";
+  
  for(i=0;i<lvy;i++){
-	 	 	 
+	 	 	 			 
   s=vy2[i];
   s+=" ";
   ssize= (unsigned long int) s.size();
@@ -694,47 +686,51 @@ RcppExport SEXP markov_model_cpp(SEXP Data_p, SEXP var_path_p, SEXP var_conv_p, 
     j=j+1;
    }
    
-   
-   if(channel[0]!='0'){//se non è il channel start
+   if(channel.compare(channel_old)!=0){
+	      
+    if(channel[0]!='0'){//se non è il channel start
     
-    if(channel[0]=='e'){ //stato finale
+     if(channel[0]=='e'){ //stato finale
      
-	 ++npassi;
+	  ++npassi;
 	  
-	 if(vci>0){ //se ci sono conversion
-	  ichannel=nchannels_sim-2;
-	  S.add(ichannel_old,ichannel,vci);
-	  if(flg_var_value==1){
-	   fV.add(ichannel_old,mp_vui[vui],vci);
+	  if(vci>0){ //se ci sono conversion
+	   ichannel=nchannels_sim-2;
+	   S.add(ichannel_old,ichannel,vci);
+	   if(flg_var_value==1){
+	    fV.add(ichannel_old,mp_vui[vui],vci);
+	   }
+       goto next_path;
 	  }
-      goto next_path;
-	 }
 	 
-	 if(vni>0){ //se non ci sono conversion
-	  ichannel=nchannels_sim-1;
-	  S.add(ichannel_old,ichannel,vni);
-	  goto next_path;
-     }
+	  if(vni>0){ //se non ci sono conversion
+	   ichannel=nchannels_sim-1;
+	   S.add(ichannel_old,ichannel,vni);
+	   goto next_path;
+      }
 	 
-    }else{ //stato non finale
+     }else{ //stato non finale
 	  
-	 if(vpi>0){
-      ichannel=atol(channel.c_str());
-   	  S.add(ichannel_old,ichannel,vpi);
-	 }
+	  if(vpi>0){
+       ichannel=atol(channel.c_str());
+   	   S.add(ichannel_old,ichannel,vpi);
+	  }
     
-	}
+	 }
 	
-	++npassi;
+	 ++npassi;
 
-   }else{ //stato iniziale
+    }else{ //stato iniziale
    
-    ichannel=0;
+     ichannel=0;
    
-   }
+    }
   
+    channel_old=channel;
+    ichannel_old=ichannel;
+  
+   }//end compare
      
-   ichannel_old=ichannel;
    channel="";
    
    j=j+1;   
@@ -743,10 +739,6 @@ RcppExport SEXP markov_model_cpp(SEXP Data_p, SEXP var_path_p, SEXP var_conv_p, 
   
   next_path:;
     
-  if(vpi>0){  
-   fP.add(0,npassi,vpi); 
-  }
- 
  }//end for 
         
  //out matrice di transizione
@@ -773,39 +765,14 @@ RcppExport SEXP markov_model_cpp(SEXP Data_p, SEXP var_path_p, SEXP var_conv_p, 
  
  //distribuzione numeri uniformi
  double iu,nuf;
- nuf=1000000;
+ nuf=1e6;
  NumericVector vunif=runif(nuf);
-  
- //distribuzione del numero di passi
- fP.cum();
-   
- //distribuzione del max numero di passi
- unsigned long int s0,smax;
- iu=0;
-  
- Fx fmP(1,max_npassi);
- 
- 
- for (i=0; i<n_boot; i++){
-  smax=0;
-  for (j=0; j<n_single_boot; j++){
-   if(iu>=nuf){vunif=runif(nuf);iu=0;} //genero il numero di passi
-   ++iu;
-   s0=fP.sim(0,vunif[iu]);
-   smax=max(smax,s0); 
-  }
-  fmP.add(0,smax,1);
- }
-
- //f.r. max numero di passi
- fmP.cum();
- 
   
  //cout << "Processed 3/4" << endl;
  
  //SIMULAZIONI
   
- unsigned long int npassi0,c,c_last,nconv;
+ unsigned long int c,c_last,nconv,max_npassi;
  double sval0,ssval;
  vector<bool> C(nchannels);
  vector<double> T(nchannels);
@@ -813,9 +780,19 @@ RcppExport SEXP markov_model_cpp(SEXP Data_p, SEXP var_path_p, SEXP var_conv_p, 
    
  nconv=0;
  sval0=0;
- npassi0=0;
  ssval=0;
  c_last=0;
+ iu=0;
+ 
+ if(max_step==0){
+  max_npassi=nchannels_sim*10;
+ }else{
+  max_npassi=max_step;	 
+ }
+ if(nsim==0){
+  nsim=max((unsigned long int)1,(unsigned long int) floor(1e7/max_npassi));
+ }
+
  
  for(i=0; i<nsim; i++){
 	 	 	   
@@ -827,14 +804,10 @@ RcppExport SEXP markov_model_cpp(SEXP Data_p, SEXP var_path_p, SEXP var_conv_p, 
   }
 
   C[c]=1; //assegno 1 al channel start
+      
+  while(npassi<=max_npassi){ //interrompo quando raggiungo il massimo numero di passi
    
-  if(iu>=nuf){vunif=runif(nuf);iu=0;} //genero il max numero di passi "npassi0"
-  npassi0=fmP.sim(0,vunif[iu]);
-  ++iu;
-   
-  while(npassi<=npassi0){ //interrompo quando raggiungo il massimo numero di passi
-   
-   if(iu>=nuf){vunif=runif(nuf);iu=0;} //genero il max numero di passi "npassi0"
+   if(iu>=nuf){vunif=runif(nuf);iu=0;} //genero il canale da visitare
    c=S.sim(c,vunif[iu]);
    ++iu;
    

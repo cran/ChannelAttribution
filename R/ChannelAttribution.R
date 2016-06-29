@@ -10,12 +10,14 @@ heuristic_models=function(Data, var_path, var_conv, var_value=NULL){
 }	
 
 
-markov_model=function(Data, var_path, var_conv, var_value=NULL, var_null=NULL, order=1, nsim=1e6, n_boot=1e6, n_single_boot=30, out_more=FALSE){
+markov_model=function(Data, var_path, var_conv, var_value=NULL, var_null=NULL, order=1, nsim=NULL, max_step=NULL, out_more=FALSE){
 
  if(is.null(var_value)){var_value="0"}
  if(is.null(var_null)){var_null="0"}
- 
- res=.Call("markov_model_cpp", Data, var_path, var_conv, var_value, var_null, order, nsim, n_boot, n_single_boot, out_more)
+ if(is.null(nsim)){nsim=0}
+ if(is.null(max_step)){max_step=0}
+
+ res=.Call("markov_model_cpp", Data, var_path, var_conv, var_value, var_null, order, nsim, max_step, out_more)
  
  if(out_more==FALSE){
   return(as.data.frame(res)) 
