@@ -570,16 +570,16 @@ RcppExport SEXP markov_model_cpp(SEXP Data_p, SEXP var_path_p, SEXP var_conv_p, 
 	   }
 	  }
 	    
-	  if(lrchannels<order){
-	   channel+=",";
-	   for(j=lrchannels;j<order;j++){
-	    channel+="0";
-	    vchannels_sim_id[j]=0;
-	    if(j<(order-1)){
-	     channel+=",";
-	    }
-	   }
-	  }
+	  // if(lrchannels<order){
+	   // channel+=",";
+	   // for(j=lrchannels;j<order;j++){
+	    // channel+="0";
+	    // vchannels_sim_id[j]=0;
+	    // if(j<(order-1)){
+	     // channel+=",";
+	    // }
+	   // }
+	  // }
 	      		  
 	  if(mp_channels_sim.find(channel) == mp_channels_sim.end()){
 	   mp_channels_sim[channel]=nchannels_sim;
@@ -791,6 +791,9 @@ RcppExport SEXP markov_model_cpp(SEXP Data_p, SEXP var_path_p, SEXP var_conv_p, 
  }
  if(nsim==0){
   nsim=max((unsigned long int)1,(unsigned long int) floor(1e7/max_npassi));
+  if(nsim<1e4){
+   nsim=1e4;	  
+  }
  }
 
  

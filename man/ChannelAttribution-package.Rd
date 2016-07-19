@@ -18,8 +18,8 @@ The package also contains a function that estimates three heuristic models (firs
 \tabular{ll}{
 Package: \tab ChannelAttribution\cr
 Type: \tab Package\cr
-Version: \tab 1.6\cr
-Date: \tab 2016-06-29\cr
+Version: \tab 1.7\cr
+Date: \tab 2016-07-17\cr
 License: \tab GPL (>= 2)\cr
 }
  Package contains two functions: markov_model which estimates a k-order Markov model and heuristic_model which estimates three heuristic models (first-touch, last-touch and linear-touch) from customer journey data. 
