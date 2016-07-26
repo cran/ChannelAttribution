@@ -87,11 +87,14 @@ RcppExport SEXP heuristic_models_cpp(SEXP Data_p, SEXP var_path_p, SEXP var_conv
  map<string,double> mp_last_val;
  map<string,double> mp_linear_conv;
  map<string,double> mp_linear_val;
- 
- vector<string> vchannels_linear;
- double nchannels_linear;
+ map<string,double> mp0_linear_conv;
+ map<string,double> mp0_linear_val;
+
+ vector<string> vchannels_unique;
+ double nchannels_unique;
  string kchannel;
-  
+ long long int n_path_length;
+
  for(i=0;i<lvy;i++){
 	 	 
   s=vy[i];
@@ -100,8 +103,12 @@ RcppExport SEXP heuristic_models_cpp(SEXP Data_p, SEXP var_path_p, SEXP var_conv
   ssize=(long long int) s.size();
   channel="";
   j=0;
-  nchannels_linear=0;
-  vchannels_linear.clear();
+  nchannels_unique=0;
+  vchannels_unique.clear();
+  
+  n_path_length=0;
+  mp0_linear_conv.clear();
+  mp0_linear_val.clear();
   
   while(j<ssize){  
    	   
@@ -131,24 +138,30 @@ RcppExport SEXP heuristic_models_cpp(SEXP Data_p, SEXP var_path_p, SEXP var_conv
      mp_first_conv[channel]=0;
 	 mp_last_conv[channel]=0;
 	 mp_linear_conv[channel]=0;
+	 mp0_linear_conv[channel]=0;
 	 
 	 if(flg_var_value==1){
 	  mp_first_val[channel]=0;	
 	  mp_last_val[channel]=0;
 	  mp_linear_val[channel]=0;
+	  mp0_linear_val[channel]=0;
 	 }		 
 	 
 	}
 	 	 
     //lista canali unici
-    if(nchannels_linear==0){
-     vchannels_linear.push_back(channel);
-	 ++nchannels_linear;
-    }else if(find(vchannels_linear.begin(),vchannels_linear.end(),channel)==vchannels_linear.end()){
-	 vchannels_linear.push_back(channel);
-	 ++nchannels_linear;
+    if(nchannels_unique==0){
+     vchannels_unique.push_back(channel);
+	 ++nchannels_unique;
+    }else if(find(vchannels_unique.begin(),vchannels_unique.end(),channel)==vchannels_unique.end()){
+	 vchannels_unique.push_back(channel);
+	 ++nchannels_unique;
     }
-	
+
+ 	mp0_linear_conv[channel]=mp0_linear_conv[channel]+vc[i];
+    mp0_linear_val[channel]=mp0_linear_val[channel]+vv[i]; 
+    ++n_path_length;
+   
     channel_last=channel;
   
     channel="";
@@ -156,23 +169,23 @@ RcppExport SEXP heuristic_models_cpp(SEXP Data_p, SEXP var_path_p, SEXP var_conv
     
   }//end while j
    
-  channel_first=vchannels_linear[0];
+  channel_first=vchannels_unique[0];
   mp_first_conv[channel_first]=mp_first_conv[channel_first]+vc[i];
  
   mp_last_conv[channel_last]=mp_last_conv[channel_last]+vc[i];
  
   //linear
-  for(k=0;k<nchannels_linear;k++){
-    kchannel=vchannels_linear[k];
-    mp_linear_conv[kchannel]=mp_linear_conv[kchannel]+(vc[i]/nchannels_linear);
+  for(k=0;k<nchannels_unique;k++){
+    kchannel=vchannels_unique[k];
+    mp_linear_conv[kchannel]=mp_linear_conv[kchannel]+(mp0_linear_conv[kchannel]/n_path_length);
   }
   
   if(flg_var_value==1){
    mp_first_val[channel_first]=mp_first_val[channel_first]+vv[i];   
    mp_last_val[channel_last]=mp_last_val[channel_last]+vv[i];  
-   for(k=0;k<nchannels_linear;k++){
-    kchannel=vchannels_linear[k];
-    mp_linear_val[kchannel]=mp_linear_val[kchannel]+(vv[i]/nchannels_linear); 
+   for(k=0;k<nchannels_unique;k++){
+    kchannel=vchannels_unique[k];
+    mp_linear_val[kchannel]=mp_linear_val[kchannel]+(mp0_linear_val[kchannel]/n_path_length); 
    }
   }	  
  
@@ -569,18 +582,7 @@ RcppExport SEXP markov_model_cpp(SEXP Data_p, SEXP var_path_p, SEXP var_conv_p, 
 	     channel+=",";
 	   }
 	  }
-	    
-	  // if(lrchannels<order){
-	   // channel+=",";
-	   // for(j=lrchannels;j<order;j++){
-	    // channel+="0";
-	    // vchannels_sim_id[j]=0;
-	    // if(j<(order-1)){
-	     // channel+=",";
-	    // }
-	   // }
-	  // }
-	      		  
+	    	      		  
 	  if(mp_channels_sim.find(channel) == mp_channels_sim.end()){
 	   mp_channels_sim[channel]=nchannels_sim;
        vchannels_sim.push_back(channel); //lo utilizzo per output more
@@ -651,17 +653,18 @@ RcppExport SEXP markov_model_cpp(SEXP Data_p, SEXP var_path_p, SEXP var_conv_p, 
  Fx S(nchannels_sim,nchannels_sim);
   
  Fx fV(nchannels_sim,l_vui);
- 
- ichannel_old=0;
- ichannel=0;
- channel_old="";
-  
+   
  for(i=0;i<lvy;i++){
 	 	 	 			 
   s=vy2[i];
   s+=" ";
   ssize= (unsigned long int) s.size();
+  
   channel="";
+  channel_old="";
+  ichannel_old=0;
+  ichannel=0;
+ 
   j=0;
   npassi=0;
   
@@ -685,7 +688,7 @@ RcppExport SEXP markov_model_cpp(SEXP Data_p, SEXP var_path_p, SEXP var_conv_p, 
     }
     j=j+1;
    }
-   
+     
    if(channel.compare(channel_old)!=0){
 	      
     if(channel[0]!='0'){//se non è il channel start
@@ -700,10 +703,15 @@ RcppExport SEXP markov_model_cpp(SEXP Data_p, SEXP var_path_p, SEXP var_conv_p, 
 	   if(flg_var_value==1){
 	    fV.add(ichannel_old,mp_vui[vui],vci);
 	   }
-       goto next_path;
+	   if(vni>0){
+		goto next_null;   
+	   }else{
+		goto next_path;   
+	   }
 	  }
 	 
 	  if(vni>0){ //se non ci sono conversion
+	   next_null:;
 	   ichannel=nchannels_sim-1;
 	   S.add(ichannel_old,ichannel,vni);
 	   goto next_path;
