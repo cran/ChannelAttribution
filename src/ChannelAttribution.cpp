@@ -159,8 +159,10 @@ RcppExport SEXP heuristic_models_cpp(SEXP Data_p, SEXP var_path_p, SEXP var_conv
     }
 
  	mp0_linear_conv[channel]=mp0_linear_conv[channel]+vc[i];
-    mp0_linear_val[channel]=mp0_linear_val[channel]+vv[i]; 
-    ++n_path_length;
+    if(flg_var_value==1){
+	 mp0_linear_val[channel]=mp0_linear_val[channel]+vv[i]; 
+    }
+	++n_path_length;
    
     channel_last=channel;
   
