@@ -373,7 +373,7 @@ RcppExport SEXP markov_model_cpp(SEXP Data_p, SEXP var_path_p, SEXP var_conv_p, 
  long long int out_more = Rcpp::as<long long int>(out_more_0);
  
  //inp.b 
- 
+  
  bool flg_var_value;
  flg_var_value=0;
  if(var_value.compare("0")!=0){
@@ -430,8 +430,10 @@ RcppExport SEXP markov_model_cpp(SEXP Data_p, SEXP var_path_p, SEXP var_conv_p, 
  unsigned long int lrchannels,j0,z; 
  string channel_j;
  
- vector<unsigned long int> vchannels_sim_id(order);
- map<unsigned long int, vector<unsigned long int>> mp_channels_sim_id;
+ // vector<unsigned long int> vchannels_sim_id(order);
+ // map<unsigned long int, vector<unsigned long int>> mp_channels_sim_id;
+ vector<long int> vchannels_sim_id(order);
+ map<unsigned long int, vector<long int>> mp_channels_sim_id;
  
  nchannels=0;
  nchannels_sim=0;
@@ -445,11 +447,12 @@ RcppExport SEXP markov_model_cpp(SEXP Data_p, SEXP var_path_p, SEXP var_conv_p, 
 
  vector<string> vchannels_sim;
  for(z=0;z<order;z++){
-  vchannels_sim_id[z]=0;
+  vchannels_sim_id[z]=-1;
  }
  if(order>1){
   mp_channels_sim["(start)"]=nchannels_sim;
-  vchannels_sim.push_back("(start)");	 
+  vchannels_sim.push_back("(start)");
+  vchannels_sim_id[0]=nchannels_sim;
   mp_channels_sim_id[nchannels_sim]=vchannels_sim_id;
   ++nchannels_sim;
  } 
@@ -532,6 +535,9 @@ RcppExport SEXP markov_model_cpp(SEXP Data_p, SEXP var_path_p, SEXP var_conv_p, 
   if(order>1){
 		
 	lrchannels=rchannels.size();
+	for(z=0;z<order;z++){
+	 vchannels_sim_id[z]=-1;
+	}
 	
     if(lrchannels>(order-1)){
 		
@@ -541,9 +547,6 @@ RcppExport SEXP markov_model_cpp(SEXP Data_p, SEXP var_path_p, SEXP var_conv_p, 
       
 	  channel="";
 	  channel_j="";
-	  for(z=0;z<order;z++){
-	   vchannels_sim_id[z]=0;
-	  }
 	 
   	  z=0;
 	  j0=k+order;
@@ -622,7 +625,7 @@ RcppExport SEXP markov_model_cpp(SEXP Data_p, SEXP var_path_p, SEXP var_conv_p, 
   mp_channels_sim["(conversion)"]=nchannels_sim;
   vchannels_sim.push_back("(conversion)");	
   for(z=0;z<order;z++){
-   vchannels_sim_id[z]=nchannels_sim;
+   vchannels_sim_id[0]=nchannels_sim;
   }
   mp_channels_sim_id[nchannels_sim]=vchannels_sim_id;
   ++nchannels_sim;
@@ -630,7 +633,7 @@ RcppExport SEXP markov_model_cpp(SEXP Data_p, SEXP var_path_p, SEXP var_conv_p, 
   mp_channels_sim["(null)"]=nchannels_sim;
   vchannels_sim.push_back("(null)");	 
   for(z=0;z<order;z++){
-   vchannels_sim_id[z]=nchannels_sim;
+   vchannels_sim_id[0]=nchannels_sim;
   }
   mp_channels_sim_id[nchannels_sim]=vchannels_sim_id;
   ++nchannels_sim;
@@ -783,6 +786,7 @@ RcppExport SEXP markov_model_cpp(SEXP Data_p, SEXP var_path_p, SEXP var_conv_p, 
  //SIMULAZIONI
   
  unsigned long int c,c_last,nconv,max_npassi;
+ long int id0;
  double sval0,ssval;
  vector<bool> C(nchannels);
  vector<double> T(nchannels);
@@ -797,13 +801,10 @@ RcppExport SEXP markov_model_cpp(SEXP Data_p, SEXP var_path_p, SEXP var_conv_p, 
  if(max_step==0){
   max_npassi=nchannels_sim*10;
  }else{
-  max_npassi=max_step;	 
+  max_npassi=1e6;	 
  }
  if(nsim==0){
-  nsim=max((unsigned long int)1,(unsigned long int) floor(1e7/max_npassi));
-  if(nsim<1e4){
-   nsim=1e4;	  
-  }
+  nsim=1e6;
  }
 
  
@@ -834,15 +835,20 @@ RcppExport SEXP markov_model_cpp(SEXP Data_p, SEXP var_path_p, SEXP var_conv_p, 
 	C[c]=1; //flaggo con 1 il canale visitato   
    }else{	   
     for(k=0; k<order; k++){
-     C[mp_channels_sim_id[c][k]]=1;
-    }
+	 id0=mp_channels_sim_id[c][k];
+	 if(id0>=0){
+      C[id0]=1;
+     }else{
+	  break;	 
+	 }
+	}
    }
       
    c_last=c; //salvo il canale visitato
    ++npassi;
  
   }//end while npassi 
- 
+  
   go_to_conv:;
  
   if(c==nchannels_sim-2){ //solo se ho raggiunto la conversion assegno +1 ai canali interessati (se ho raggiunto il max numero di passi è come se fossi andato a null)
@@ -873,7 +879,7 @@ RcppExport SEXP markov_model_cpp(SEXP Data_p, SEXP var_path_p, SEXP var_conv_p, 
  	
  }//end for i
  
- 
+  
  T[0]=0; //pongo channel start = 0
  unsigned long int nch0; 
  nch0=nchannels-3;
