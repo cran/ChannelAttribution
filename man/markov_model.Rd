@@ -11,7 +11,7 @@
 
 \usage{
 markov_model(Data, var_path, var_conv, var_value=NULL, var_null=NULL, 
-             order=1, nsim=NULL, max_step=NULL, out_more=FALSE)
+             order=1, nsim=NULL, max_step=NULL, out_more=FALSE, sep=">", seed=NULL)
 }
 
 
@@ -25,6 +25,8 @@ markov_model(Data, var_path, var_conv, var_value=NULL, var_null=NULL,
   \item{nsim}{total simulations from transition matrix.}
   \item{max_step}{maximum number of steps for a single simulated path.}
   \item{out_more}{if TRUE returns the transition probabilities between channels and removal effects.}
+  \item{sep}{separator between the channels.}
+  \item{seed}{random seed. giving to this parameter the same value over different runs guarantee that results will not vary.}
 }
 
 

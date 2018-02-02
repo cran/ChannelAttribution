@@ -33,7 +33,7 @@ string to_string(T pNumber)
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-RcppExport SEXP heuristic_models_cpp(SEXP Data_p, SEXP var_path_p, SEXP var_conv_p, SEXP var_value_p)
+RcppExport SEXP heuristic_models_cpp(SEXP Data_p, SEXP var_path_p, SEXP var_conv_p, SEXP var_value_p, SEXP sep_p)
 {
 	
  BEGIN_RCPP
@@ -50,6 +50,9 @@ RcppExport SEXP heuristic_models_cpp(SEXP Data_p, SEXP var_path_p, SEXP var_conv
 
  CharacterVector var_value_0(var_value_p); 
  string var_value = Rcpp::as<string>(var_value_0);
+ 
+ CharacterVector sep_0(sep_p); 
+ string sep = Rcpp::as<string>(sep_0);
  
  //inp.b
  
@@ -72,6 +75,8 @@ RcppExport SEXP heuristic_models_cpp(SEXP Data_p, SEXP var_path_p, SEXP var_conv
  }
  
  long long int i,j,k,lvy,ssize;
+ bool cfirst;
+ unsigned long int start_pos,end_pos;
  long long int nchannels;
  string s,channel,channel_first,channel_last;
   
@@ -99,7 +104,7 @@ RcppExport SEXP heuristic_models_cpp(SEXP Data_p, SEXP var_path_p, SEXP var_conv
 	 	 
   s=vy[i];
   
-  s+=" >";
+  s+=sep[0];
   ssize=(long long int) s.size();
   channel="";
   j=0;
@@ -109,26 +114,25 @@ RcppExport SEXP heuristic_models_cpp(SEXP Data_p, SEXP var_path_p, SEXP var_conv
   n_path_length=0;
   mp0_linear_conv.clear();
   mp0_linear_val.clear();
-  
+     	   
   while(j<ssize){  
-   	   
-    if((j>0) & (ssize>1)){
-    
-      if((s[j-1]=='>') & (s[j]==' ')){
-	   j=j+1;
-	  }
-	  if((s[j]==' ') & (s[j+1]=='>')){
-	   j=j+2;
-	   break;
-	  }
-	 
-    }
-    
-    while((s[j]!=' ') & (s[j+1]!='>')){
-	  channel+=s[j];
-      ++j;	
-    }
-    ++j;
+         
+   cfirst=1;
+   while(s[j]!=sep[0]){
+	if(cfirst==0){   
+     if(s[j]!=' '){
+	  end_pos=j;	 
+	 }
+    }else if((cfirst==1) & (s[j]!=' ')){
+	 cfirst=0;
+	 start_pos=j;
+	 end_pos=j;
+	}
+    ++j;     
+   }
+   
+   if(cfirst==0){
+    channel=s.substr(start_pos,(end_pos-start_pos+1));
    
     if(mp_channels.find(channel) == mp_channels.end()){
 	 mp_channels[channel]=nchannels;
@@ -166,8 +170,10 @@ RcppExport SEXP heuristic_models_cpp(SEXP Data_p, SEXP var_path_p, SEXP var_conv
    
     channel_last=channel;
   
-    channel="";
-    ++j;
+   }//end cfirst
+  
+   channel="";
+   ++j;
     
   }//end while j
    
@@ -339,7 +345,7 @@ List Fx::tran_matx(vector<string> vchannels)
 }
 
 
-RcppExport SEXP markov_model_cpp(SEXP Data_p, SEXP var_path_p, SEXP var_conv_p, SEXP var_value_p, SEXP var_null_p, SEXP order_p, SEXP nsim_p, SEXP max_step_p, SEXP out_more_p)
+RcppExport SEXP markov_model_cpp(SEXP Data_p, SEXP var_path_p, SEXP var_conv_p, SEXP var_value_p, SEXP var_null_p, SEXP order_p, SEXP nsim_p, SEXP max_step_p, SEXP out_more_p, SEXP sep_p)
 {
 	 	
  BEGIN_RCPP
@@ -371,6 +377,9 @@ RcppExport SEXP markov_model_cpp(SEXP Data_p, SEXP var_path_p, SEXP var_conv_p, 
 
  NumericVector out_more_0(out_more_p); 
  long long int out_more = Rcpp::as<long long int>(out_more_0);
+ 
+ CharacterVector sep_0(sep_p); 
+ string sep = Rcpp::as<string>(sep_0);
  
  //inp.b 
   
@@ -406,6 +415,8 @@ RcppExport SEXP markov_model_cpp(SEXP Data_p, SEXP var_path_p, SEXP var_conv_p, 
   
  unsigned long int i,j,k,lvy,ssize;
  unsigned long int nchannels,nchannels_sim,npassi;
+ bool cfirst;
+ unsigned long int start_pos,end_pos;
  string s,channel,path;
  map<string,unsigned long int> mp_channels,mp_channels_sim;
  map<unsigned long int,unsigned long int> mp_npassi;
@@ -430,8 +441,6 @@ RcppExport SEXP markov_model_cpp(SEXP Data_p, SEXP var_path_p, SEXP var_conv_p, 
  unsigned long int lrchannels,j0,z; 
  string channel_j;
  
- // vector<unsigned long int> vchannels_sim_id(order);
- // map<unsigned long int, vector<unsigned long int>> mp_channels_sim_id;
  vector<long int> vchannels_sim_id(order);
  map<unsigned long int, vector<long int>> mp_channels_sim_id;
  
@@ -472,9 +481,9 @@ RcppExport SEXP markov_model_cpp(SEXP Data_p, SEXP var_path_p, SEXP var_conv_p, 
  }
  
  for(i=0;i<lvy;i++){
-	 
+	   
   s=vy[i];
-  s+=" >";
+  s+=sep[0];
   ssize=(unsigned long int) s.size();
   channel="";
   path="";
@@ -485,48 +494,49 @@ RcppExport SEXP markov_model_cpp(SEXP Data_p, SEXP var_path_p, SEXP var_conv_p, 
   //medium.touch
   
   while(j<ssize){  
-   	   
-   if((j>0) & (ssize>1)){
-   
-     if((s[j-1]=='>') & (s[j]==' ')){
-	  j=j+1;
+         
+   cfirst=1;
+   while(s[j]!=sep[0]){
+	if(cfirst==0){   
+     if(s[j]!=' '){
+	  end_pos=j;	 
 	 }
-	 if((s[j]==' ') & (s[j+1]=='>')){
-	  j=j+2;
-	  break;
-	 }
-	
-   }
-
-   while((s[j]!=' ') & (s[j+1]!='>')){
-	 channel+=s[j];
-     ++j;	
-   }
-   ++j;
-   
-   if(mp_channels.find(channel) == mp_channels.end()){
-    mp_channels[channel]=nchannels;
-    vchannels.push_back(channel);
-    ++nchannels;
+    }else if((cfirst==1) & (s[j]!=' ')){
+	 cfirst=0;
+	 start_pos=j;
+	 end_pos=j;
+	}
+    ++j;     
    }
    
-   if(order==1){
-	 
-    if(npassi==0){
-     path="0 ";
-    }else{
-     path+=" ";
+   if(cfirst==0){
+    channel=s.substr(start_pos,(end_pos-start_pos+1));
+   
+    if(mp_channels.find(channel) == mp_channels.end()){
+     mp_channels[channel]=nchannels;
+     vchannels.push_back(channel);
+     ++nchannels;
     }
-     
-    path+=to_string(mp_channels[channel]);
-    ++npassi;  	
- 
-   }else{
-	
-    rchannels.push_back(channel);   
-	
-   }
-
+    
+    if(order==1){
+	  
+     if(npassi==0){
+      path="0 ";
+     }else{
+      path+=" ";
+     }
+      
+     path+=to_string(mp_channels[channel]);
+     ++npassi;  	
+    
+    }else{
+	 
+     rchannels.push_back(channel);   
+	 
+    }
+       
+   }//if end_pos
+   
    channel="";
    ++j;
    

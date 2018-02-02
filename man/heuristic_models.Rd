@@ -10,7 +10,7 @@
 
 
 \usage{
-heuristic_models(Data, var_path, var_conv, var_value=NULL)
+heuristic_models(Data, var_path, var_conv, var_value=NULL, sep=">")
 }
 
 
@@ -19,6 +19,7 @@ heuristic_models(Data, var_path, var_conv, var_value=NULL)
   \item{var_path}{name of the the column containing paths.}
   \item{var_conv}{name of the column containing total conversions.}
   \item{var_value}{name of the column containing total conversion value.}
+  \item{sep}{separator between the channels.}
 }
 
 
