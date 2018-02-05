@@ -43,7 +43,7 @@ data(PathData)
 
 #uncomment the following lines to run the examples
 
-#markov_model(Data, "path", "total_conversions")
+markov_model(Data, "path", "total_conversions")
 #markov_model(Data, "path", "total_conversions", 
 #             var_value="total_conversion_value")
 #markov_model(Data,"path","total_conversions",

@@ -36,7 +36,7 @@ data(PathData)
 
 #uncomment the following lines to run the examples
 
-#heuristic_models(Data,"path","total_conversions")
+heuristic_models(Data,"path","total_conversions")
 #heuristic_models(Data,"path","total_conversions",var_value="total_conversion_value")
 
 }
