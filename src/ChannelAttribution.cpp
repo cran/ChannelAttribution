@@ -367,16 +367,16 @@ RcppExport SEXP markov_model_cpp(SEXP Data_p, SEXP var_path_p, SEXP var_conv_p, 
  string var_null = Rcpp::as<string>(var_null_0);
  
  NumericVector order_0(order_p); 
- long long int order = Rcpp::as<long long int>(order_0);
+ unsigned long long int order = Rcpp::as<unsigned long long int>(order_0);
  
  NumericVector nsim_0(nsim_p); 
- long long int nsim = Rcpp::as<long long int>(nsim_0);
+ unsigned long long int nsim = Rcpp::as<unsigned long long int>(nsim_0);
 
  NumericVector max_step_0(max_step_p); 
- long long int max_step = Rcpp::as<long long int>(max_step_0);
+ unsigned long long int max_step = Rcpp::as<unsigned long long int>(max_step_0);
 
  NumericVector out_more_0(out_more_p); 
- long long int out_more = Rcpp::as<long long int>(out_more_0);
+ unsigned long long int out_more = Rcpp::as<unsigned long long int>(out_more_0);
  
  CharacterVector sep_0(sep_p); 
  string sep = Rcpp::as<string>(sep_0);
@@ -434,7 +434,6 @@ RcppExport SEXP markov_model_cpp(SEXP Data_p, SEXP var_path_p, SEXP var_conv_p, 
  unsigned long int l_vui=0;
  map<double,unsigned long int> mp_vui;
  vector<double> v_vui;
- vector<double> vu(lvy);
  double vui;
 
  vector<string> rchannels;
@@ -470,12 +469,12 @@ RcppExport SEXP markov_model_cpp(SEXP Data_p, SEXP var_path_p, SEXP var_conv_p, 
  //definizione mappa conversion value
  if(flg_var_value==1){
   for(i=0;i<lvy;i++){
-   vui=vv[i]/vc[i];
-   vu[i]=vui;
-   if(mp_vui.find(vui)==mp_vui.end()){
-    mp_vui[vui]=l_vui;
-    v_vui.push_back(vui);
-    ++l_vui;	
+   if(vc[i]>0){
+    if(mp_vui.find(vui)==mp_vui.end()){
+     mp_vui[vui]=l_vui;
+     v_vui.push_back(vui);
+     ++l_vui;	
+    }
    }
   }
  }
@@ -689,9 +688,6 @@ RcppExport SEXP markov_model_cpp(SEXP Data_p, SEXP var_path_p, SEXP var_conv_p, 
   }else{
    vni=0;
   }	  
-  if(flg_var_value==1){
-   vui=vu[i];
-  }
   vpi=vci+vni;
    
   while(j<ssize){
@@ -716,6 +712,7 @@ RcppExport SEXP markov_model_cpp(SEXP Data_p, SEXP var_path_p, SEXP var_conv_p, 
 	   ichannel=nchannels_sim-2;
 	   S.add(ichannel_old,ichannel,vci);
 	   if(flg_var_value==1){
+		vui=vv[i]/vci;
 	    fV.add(ichannel_old,mp_vui[vui],vci);
 	   }
 	   if(vni>0){
