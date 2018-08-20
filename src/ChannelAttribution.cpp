@@ -470,6 +470,7 @@ RcppExport SEXP markov_model_cpp(SEXP Data_p, SEXP var_path_p, SEXP var_conv_p, 
  if(flg_var_value==1){
   for(i=0;i<lvy;i++){
    if(vc[i]>0){
+	vui=vv[i]/vc[i];
     if(mp_vui.find(vui)==mp_vui.end()){
      mp_vui[vui]=l_vui;
      v_vui.push_back(vui);
