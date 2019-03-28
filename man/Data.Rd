@@ -1,9 +1,11 @@
 \name{Data}
 \docType{data}
 \alias{Data}
-\title{Customer journeys data}
+
+\title{Customer journeys data.}
+
 \description{
- Customer path data with conversions and conversion value. 
+ Example dataset. 
 }
 \usage{data(PathData)}
 \format{

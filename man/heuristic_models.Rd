@@ -4,7 +4,8 @@
 \alias{heuristic_models}
 
 
-\title{Heuristic models for the online attribution problem}
+\title{Heuristic models for the online attribution problem.}
+
 \description{Estimate theree heuristic models (first-touch, last-touch, linear) from customer journey data.
 }
 
@@ -16,9 +17,9 @@ heuristic_models(Data, var_path, var_conv, var_value=NULL, sep=">")
 
 \arguments{
   \item{Data}{data.frame containing paths and conversions.}
-  \item{var_path}{name of the the column containing paths.}
-  \item{var_conv}{name of the column containing total conversions.}
-  \item{var_value}{name of the column containing total conversion value.}
+  \item{var_path}{column name containing paths.}
+  \item{var_conv}{column name containing total conversions.}
+  \item{var_value}{column name containing total conversion value.}
   \item{sep}{separator between the channels.}
 }
 
@@ -32,12 +33,16 @@ heuristic_models(Data, var_path, var_conv, var_value=NULL, sep=">")
 
 \examples{
 
+\dontrun{
+
+library(ChannelAttribution)
+
 data(PathData) 
 
-#uncomment the following lines to run the examples
-
 heuristic_models(Data,"path","total_conversions")
-#heuristic_models(Data,"path","total_conversions",var_value="total_conversion_value")
+heuristic_models(Data,"path","total_conversions",var_value="total_conversion_value")
+
+}
 
 }
 

@@ -7,8 +7,12 @@
 #include <numeric>
 
 #include <RcppArmadillo.h>
+
 #define ARMA_USE_CXX11
 #define ARMA_64BIT_WORD
+
+#include <omp.h>
+// [[Rcpp::plugins(openmp)]]
 
 #ifndef BEGIN_RCPP
 #define BEGIN_RCPP
@@ -20,6 +24,7 @@
 
 using namespace std;
 using namespace Rcpp;
+// [[Rcpp::depends(RcppArmadillo)]]
 using namespace arma;
 
 template <typename T>
@@ -235,8 +240,6 @@ RcppExport SEXP heuristic_models_cpp(SEXP Data_p, SEXP var_path_p, SEXP var_conv
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-
-
 //Classe funzione di ripartizione
 
 class Fx
@@ -251,12 +254,34 @@ class Fx
  
  public:
   Fx(unsigned long int nrow0,unsigned long int ncol0): S(nrow0,ncol0), S0(nrow0,ncol0), S1(nrow0,ncol0), lrS0(nrow0,0), lrS(nrow0,0), non_zeros(0), nrows(nrow0) {}
+  void init(unsigned long int, unsigned long int);
   void add(unsigned long int, unsigned long int,unsigned long int);
   void cum();
-  unsigned long int sim(unsigned long int, double); 
-  List tran_matx(vector<string>); 
-	 
+  unsigned long int sim(unsigned long int, double);
+  double pconv(unsigned long int, unsigned long int);   
+  List tran_matx(vector<string>);      
 };  
+
+void Fx::init(unsigned long int nrow1, unsigned long int ncol1)
+{
+  S.reset();
+  S.set_size(nrow1,ncol1);
+  
+  S0.reset();
+  S0.set_size(nrow1,ncol1);
+  
+  S1.reset();
+  S1.set_size(nrow1,ncol1);  
+  
+  lrS0.clear();
+  lrS0.resize(nrow1);
+  
+  lrS.clear();
+  lrS.resize(nrow1);
+  
+  non_zeros=0;
+  nrows=nrow1;
+} 
 
 void Fx::add(unsigned long int ichannel_old, unsigned long int ichannel, unsigned long int vxi)
 {
@@ -284,7 +309,7 @@ void Fx::cum()
    }
    lrS[i]=S1(i,lrs0i-1);
   }   
- }	
+ }    
   
 }
 
@@ -299,7 +324,7 @@ unsigned long int Fx::sim(unsigned long int c, double uni)
  }
 
  return 0;
-	
+    
 }
 
 
@@ -320,11 +345,11 @@ List Fx::tran_matx(vector<string> vchannels)
    mij=S(i,S0(i,j));
    if(mij>0){   
       vM1[k]=vchannels[i];
-	  vM2[k]=vchannels[S0(i,j)];
-	  vM3[k]=mij;
+      vM2[k]=vchannels[S0(i,j)];
+      vM3[k]=mij;
       sm3=sm3+mij;
       ++k;
-	}
+    }
   }
   
   vsm.push_back(sm3);
@@ -344,6 +369,41 @@ List Fx::tran_matx(vector<string> vchannels)
  
 }
 
+
+double Fx::pconv(unsigned long int ichannel, unsigned long int nchannels)
+{
+
+ double res=0;
+ for(k=(nchannels-2);k<nchannels;k++){ //considero solo il canale conversion ed il canale null
+  res=res+(double) S(ichannel,k);
+ }
+ 
+ if(res>0){
+  res=(double) S(ichannel,nchannels-2)/res;
+ }else{
+  res=0;	 
+ }
+ 
+ return(res);
+  
+} 
+
+
+vector<long int> split_string(const string &s, unsigned long int order) {
+    
+	char delim=' ';
+	vector<long int> result(order,-1);
+    stringstream ss (s);
+    string item;
+
+	unsigned long int h=0;
+    while (getline (ss, item, delim)) {
+		result[h]=stoi(item);
+		h=h+1;
+    }
+		
+    return result;
+}
 
 RcppExport SEXP markov_model_cpp(SEXP Data_p, SEXP var_path_p, SEXP var_conv_p, SEXP var_value_p, SEXP var_null_p, SEXP order_p, SEXP nsim_p, SEXP max_step_p, SEXP out_more_p, SEXP sep_p)
 {
@@ -421,9 +481,7 @@ RcppExport SEXP markov_model_cpp(SEXP Data_p, SEXP var_path_p, SEXP var_conv_p, 
  map<string,unsigned long int> mp_channels,mp_channels_sim;
  map<unsigned long int,unsigned long int> mp_npassi;
  vector<unsigned long int> vnpassi;
-   
- //cout << "Processed 1/4" << endl;
- 
+    
  lvy=(unsigned long int) vy.size();
    
  //////////////////////
@@ -653,9 +711,7 @@ RcppExport SEXP markov_model_cpp(SEXP Data_p, SEXP var_path_p, SEXP var_conv_p, 
  if(order==1){
   nchannels_sim=nchannels;
  }
- 
- //cout << "Processed 2/4" << endl;
-  
+   
  /////////////////////////////////////////////////////
  //CREAZIONE DELLE MATRICI FUNZIONALI ALLE SIMULAZIONI
  ////////////////////////////////////////////////////
@@ -788,9 +844,7 @@ RcppExport SEXP markov_model_cpp(SEXP Data_p, SEXP var_path_p, SEXP var_conv_p, 
  double iu,nuf;
  nuf=1e6;
  NumericVector vunif=runif(nuf);
-  
- //cout << "Processed 3/4" << endl;
- 
+   
  //SIMULAZIONI
   
  unsigned long int c,c_last,nconv,max_npassi;
@@ -947,9 +1001,7 @@ RcppExport SEXP markov_model_cpp(SEXP Data_p, SEXP var_path_p, SEXP var_conv_p, 
  for(k=1; k<(nch0+1); k++){
   vchannels0[k-1]=vchannels[k];
  }
- 
- //cout << "Processed 4/4" << endl; 
- 
+  
  if(flg_var_value==1){ 
  
   if(out_more==0){
@@ -982,4 +1034,1507 @@ RcppExport SEXP markov_model_cpp(SEXP Data_p, SEXP var_path_p, SEXP var_conv_p, 
  
  END_RCPP
 
-}		
+}	
+
+
+
+RcppExport SEXP choose_order_cpp(SEXP Data_p, SEXP var_path_p, SEXP var_conv_p, SEXP var_null_p, SEXP max_order_p, SEXP sep_p, SEXP ncore_p, SEXP roc_npt_p)
+{
+ 
+ BEGIN_RCPP
+
+ //inp.a
+  
+ List Data(Data_p);
+ 
+ CharacterVector var_path_0(var_path_p);
+ string var_path = Rcpp::as<string>(var_path_0);
+ 
+ CharacterVector var_conv_0(var_conv_p);
+ string var_conv = Rcpp::as<string>(var_conv_0);
+  
+ CharacterVector var_null_0(var_null_p); 
+ string var_null = Rcpp::as<string>(var_null_0);
+ 
+ NumericVector max_order_0(max_order_p); 
+ unsigned long long int max_order = Rcpp::as<unsigned long long int>(max_order_0);
+  
+ CharacterVector sep_0(sep_p); 
+ string sep = Rcpp::as<string>(sep_0);
+
+ NumericVector ncore_0(ncore_p); 
+ unsigned long long int ncore = Rcpp::as<unsigned long long int>(ncore_0);
+ 
+ NumericVector roc_npt_0(roc_npt_p); 
+ unsigned long long int roc_npt = Rcpp::as<unsigned long long int>(roc_npt_0);
+ 
+ //inp.b 
+   
+ CharacterVector vy0 = Data[var_path];
+ vector<string> vy = Rcpp::as<vector<string> >(vy0);
+  
+ NumericVector vc0 = Data[var_conv];
+ vector<unsigned long int> vc = Rcpp::as<vector<unsigned long int> >(vc0);
+  
+ vector<unsigned long int> vn;
+ NumericVector vn0 = Data[var_null];
+ vn = Rcpp::as<vector<unsigned long int> >(vn0);
+   
+ unsigned long int i,j,lvy,ssize;
+ unsigned long int nchannels,npassi;
+ bool cfirst;
+ unsigned long int start_pos,end_pos;
+ string s,channel,path;
+ map<string,unsigned long int> mp_channels,mp_channels_sim;
+ map<unsigned long int,unsigned long int> mp_npassi;
+ vector<unsigned long int> vnpassi;
+    
+ lvy=(unsigned long int) vy.size();
+   
+ //////////////////////
+ //CODIFICA DA ONE STEP 
+ //////////////////////
+      
+ string channel_test="";
+ string channel_old;
+ 
+ unsigned long int order;
+ 
+ nchannels=0;
+   
+ mp_channels["(start)"]=0;
+ vector<string> vchannels;
+ vchannels.push_back("(start)");     
+ ++nchannels;
+ 
+ //ricodifica nomi canale in interi
+   
+ for(i=0;i<lvy;i++){
+	        
+  s=vy[i];
+  s+=sep[0];
+  ssize=(unsigned long int) s.size();
+  channel="";
+  path="";
+  j=0;
+  npassi=0;
+   
+  //medium.touch
+  
+  while(j<ssize){  
+         
+   cfirst=1;
+   while(s[j]!=sep[0]){
+    if(cfirst==0){   
+     if(s[j]!=' '){
+      end_pos=j;     
+     }
+    }else if((cfirst==1) & (s[j]!=' ')){
+     cfirst=0;
+     start_pos=j;
+     end_pos=j;
+    }
+    ++j;     
+   }
+   
+   if(cfirst==0){
+    channel=s.substr(start_pos,(end_pos-start_pos+1));
+   
+    if(mp_channels.find(channel) == mp_channels.end()){
+     mp_channels[channel]=nchannels;
+     vchannels.push_back(channel);
+     ++nchannels;
+    }
+			 
+    if(npassi==0){
+	 path="";
+    }else{
+     path+=" ";
+    }
+     
+    path+=to_string(mp_channels[channel]);
+    ++npassi;      
+           
+   }//if end_pos
+   
+   channel="";
+   ++j;
+   
+  }//end while channel
+    
+  vy[i]=path;
+  ++npassi;
+  
+ }//end for
+  
+ mp_channels["(conversion)"]=nchannels;
+ vchannels.push_back("(conversion)");    
+ ++nchannels;
+  
+ mp_channels["(null)"]=nchannels;
+ vchannels.push_back("(null)");     
+ ++nchannels;
+ 
+ //riconduco a order=1
+ 
+ List L_roc, L_uroc;
+ vector<double> vuroc(max_order);
+ vector<double> vuroc_corr(max_order);
+ vector<unsigned long int> vorder(max_order);
+    
+ omp_set_dynamic(0);
+ omp_set_num_threads(ncore); 
+ #pragma omp parallel for firstprivate(lvy,vc,vn,roc_npt,nchannels) shared(vorder,vuroc,vuroc_corr,L_roc) schedule(static) 
+  
+ for(order=1;order<=max_order;order++){ 
+  
+  string s,channel,path;
+  unsigned long int nchannels_sim,i,ssize,ichannel_old,j,nc,start_pos,end_pos,start_pos_last,ichannel,npassi,vci,vni,vpi,k,h;  
+  vector<string> vchannels_sim;
+  map<string,unsigned long int> mp_channels_sim; 
+  vector<string> vy2(lvy);  
+  bool flg_next_path,flg_next_null;
+  vector<double> vprev(lvy);
+  double min_prev,max_prev,pauc,nnodes;
+  
+  vector<double> vth(roc_npt);
+  unsigned long int tp,fn,tn,fp;
+  vector<double> vtpr(roc_npt+1);
+  vector<double> vfpr(roc_npt+1);
+  double th,tpr,fpr,tpr_old,fpr_old,auc;
+
+  vector<unsigned long int> vlastc(lvy);  
+  
+  nnodes=exp(lgamma(nchannels-3+order-1+1)-lgamma(order+1)-lgamma(nchannels-3-1+1));
+  
+  unsigned long int np=0;
+  for(i=0;i<lvy; i++){
+   np=np+vc[i]+vn[i];
+  }
+  
+  if(nnodes<lvy){
+  
+   nchannels_sim=0;
+    
+   mp_channels_sim["(start)"]=0;
+   vchannels_sim.push_back("(start)");
+   ++nchannels_sim;
+        
+   for(i=0;i<lvy;i++){
+   
+    s=vy[i];
+    ssize=(unsigned long int) s.size();
+   
+    channel="";
+    ichannel_old=0;
+    path="";
+    j=0; 
+    nc=0;
+    start_pos=0;
+    end_pos=0;
+    start_pos_last=0; 
+       
+    while(j<ssize){ 
+     
+     while((j<ssize) & (nc<order)){
+      
+  	  if(s[j]==' '){
+  	   nc=nc+1;
+  	   if(nc==1){
+  	    start_pos=j;
+  	   }
+  	  }else{
+  	   end_pos=j;	
+  	  }
+  	
+      ++j;
+     
+     } //while(s[j]!=' ') 
+     
+     channel=s.substr(start_pos_last,(end_pos-start_pos_last+1));
+     
+     if(mp_channels_sim.find(channel) == mp_channels_sim.end()){
+      mp_channels_sim[channel]=nchannels_sim;
+      vchannels_sim.push_back(channel);
+      ++nchannels_sim;
+     }
+     
+     ichannel=mp_channels_sim[channel];
+     
+     vlastc[i]=ichannel;
+     
+     if(ichannel!=ichannel_old){
+      path+=to_string(ichannel);
+      path+=" ";
+     }   
+     
+     ichannel_old=ichannel;
+   
+     if((end_pos+1)==ssize){break;}; 
+     j=start_pos+1;
+     start_pos_last=j;   
+     nc=0;
+   
+    }//end while(j<ssize)
+   
+    vy2[i]="0 "+path+"e";
+  	
+   }//end for i
+   
+   mp_channels_sim["(conversion)"]=nchannels_sim;
+   vchannels_sim.push_back("(conversion)");    
+   ++nchannels_sim;
+    
+   mp_channels_sim["(null)"]=nchannels_sim;
+   vchannels_sim.push_back("(null)");     
+   ++nchannels_sim;
+      
+   //Stima matrice transizione
+     
+   npassi=0;
+   Fx S(nchannels_sim,nchannels_sim);  
+   
+   for(i=0;i<lvy;i++){
+      
+    flg_next_path=0;
+    flg_next_null=0;
+                             
+    s=vy2[i];
+    s+=" ";
+    ssize= (unsigned long int) s.size();
+   
+    channel="";
+    ichannel_old=0;
+    ichannel=0;
+   
+    j=0;
+    npassi=0;
+   
+    vci=vc[i];
+    vni=vn[i];
+         
+    vpi=vci+vni;
+    
+    while((j<ssize) & (flg_next_path==0)){
+       
+     while(s[j]!=' '){
+   
+      if(j<ssize){
+       channel+=s[j];
+      }
+      j=j+1;
+     }
+                
+     if(channel[0]!='0'){//se non è il channel start
+     
+      if(channel[0]=='e'){ //stato finale
+      
+       ++npassi;
+       
+       if(vci>0){ //se ci sono conversion
+        ichannel=nchannels_sim-2;
+	    S.add(ichannel_old,ichannel,vci);
+       
+        if(vni>0){
+         flg_next_null=1;
+        }else{
+         flg_next_path=1;
+        }
+               
+       }
+      
+       if(((vni>0) | (flg_next_null==1)) & (flg_next_path==0)){ //se non ci sono conversion
+        ichannel=nchannels_sim-1;
+        S.add(ichannel_old,ichannel,vni);
+      
+        flg_next_path=1;
+       }
+      
+      }else{ //stato non finale
+       
+       if(vpi>0){
+        ichannel=atol(channel.c_str());
+	    S.add(ichannel_old,ichannel,vpi);
+	   }
+     
+      }
+     
+      if(flg_next_path==0){
+       ++npassi;
+      }
+     }else{ //stato iniziale
+    
+      ichannel=0;
+    
+     }
+   
+     if(flg_next_path==0){
+      ichannel_old=ichannel;
+     }
+      
+     if(flg_next_path==0){
+      channel="";
+      j=j+1;   
+     }
+    
+    }//end while j<size
+       
+   }//end for
+           
+   //fit
+    
+   for(i=0;i<lvy;i++){	   
+    vprev[i]=S.pconv(vlastc[i],nchannels_sim);  
+   } 
+   
+   min_prev=1;
+   for(i=0;i<lvy;i++){	   
+    min_prev=min(min_prev,vprev[i]);  
+   } 
+   
+   max_prev=0;
+   for(i=0;i<lvy;i++){	   
+    max_prev=max(max_prev,vprev[i]);  
+   } 
+     
+   for(k=0;k<roc_npt;k++){
+    vth[k]=min_prev+(k*(max_prev-min_prev)/(roc_npt-1));	
+   }
+     
+   auc=0; 
+   tpr_old=0;
+   fpr_old=0;
+      
+   vtpr[0]=0;
+   vfpr[0]=0;  
+   h=1;	
+	 
+   for(k=(roc_npt-1);k>=0 && k<roc_npt;k--){	   
+     
+    tp=0,fn=0,tn=0,fp=0;   
+    th=vth[k];
+    
+    for(i=0;i<lvy;i++){
+     
+     if((vprev[i]>=th) & (vc[i]>0)){
+  	 tp=tp+vc[i];   
+     }else if((vprev[i]<th) & (vc[i]>0)){
+      fn=fn+vc[i];
+     }
+     
+     vni=vn[i];
+	 
+	 if((vprev[i]<th) & (vni>0)){
+  	 tn=tn+vni;   
+     }else if((vprev[i]>=th) & (vni>0)){
+  	 fp=fp+vni;   
+     }
+       
+    }
+   
+    tpr=(double)tp/(double)(tp+fn);
+    fpr=(double)fp/(double)(fp+tn);
+    
+    auc=auc+((fpr-fpr_old)*tpr_old)+(((fpr-fpr_old)*(tpr-tpr_old))/2);
+       
+    vtpr[h]=tpr;
+    vfpr[h]=fpr;
+    
+    tpr_old=tpr;
+    fpr_old=fpr;
+    
+    h=h+1;
+    
+   }//end for k
+   
+   vtpr[roc_npt]=1;
+   vfpr[roc_npt]=1; 
+   auc=auc+((1-fpr_old)*tpr_old)+(((1-fpr_old)*(1-tpr_old))/2);
+       
+   pauc=(double)(1-((1-auc)*((np-1)/(np-nnodes-1))));
+   if((pauc<0) | (pauc>1)){
+    pauc=0;	  
+   }
+   
+   vuroc[order-1]=auc;
+   vuroc_corr[order-1]=pauc;
+   vorder[order-1]=order;
+   
+   L_roc[to_string(order)]=Rcpp::List::create(Rcpp::Named("fpr")=vfpr,Rcpp::Named("tpr")=vtpr);
+  
+  }//end if(nnodes<lvy)
+   
+ }//end for order
+ 
+ L_uroc=Rcpp::List::create(Rcpp::Named("order")=vorder,Rcpp::Named("auc")=vuroc,Rcpp::Named("pauc")=vuroc_corr);
+  
+ return(List::create(Named("roc")=L_roc, Named("auc")=L_uroc));
+ 
+ END_RCPP
+ 
+} 	
+
+
+
+RcppExport SEXP markov_model_mp_cpp(SEXP Data_p, SEXP var_path_p, SEXP var_conv_p, SEXP var_value_p, SEXP var_null_p, SEXP order_p, SEXP nsim_start_p, SEXP max_step_p, SEXP out_more_p, SEXP sep_p, SEXP ncore_p, SEXP nfold_p, SEXP seed_p, SEXP conv_par_p, SEXP rate_step_sim_p, SEXP verbose_p)
+{ 
+	 	
+ BEGIN_RCPP
+
+ //inp.a
+  
+ List Data(Data_p);
+ 
+ CharacterVector var_path_0(var_path_p);
+ string var_path = Rcpp::as<string>(var_path_0);
+ 
+ CharacterVector var_conv_0(var_conv_p);
+ string var_conv = Rcpp::as<string>(var_conv_0);
+ 
+ CharacterVector var_value_0(var_value_p); 
+ string var_value = Rcpp::as<string>(var_value_0);
+ 
+ CharacterVector var_null_0(var_null_p); 
+ string var_null = Rcpp::as<string>(var_null_0);
+ 
+ NumericVector order_0(order_p); 
+ unsigned long long int order = Rcpp::as<unsigned long long int>(order_0);
+ 
+ NumericVector nsim_start_0(nsim_start_p); 
+ unsigned long long int nsim_start = Rcpp::as<unsigned long long int>(nsim_start_0);
+ 
+ NumericVector max_step_0(max_step_p); 
+ unsigned long long int max_step = Rcpp::as<unsigned long long int>(max_step_0); 
+ 
+ NumericVector out_more_0(out_more_p); 
+ unsigned long long int out_more = Rcpp::as<unsigned long long int>(out_more_0);
+ 
+ CharacterVector sep_0(sep_p); 
+ string sep = Rcpp::as<string>(sep_0);
+ 
+ NumericVector ncore_0(ncore_p); 
+ unsigned long long int ncore = Rcpp::as<unsigned long long int>(ncore_0);
+
+ NumericVector nfold_0(nfold_p); 
+ unsigned long long int nfold = Rcpp::as<unsigned long long int>(nfold_0); 
+ 
+ NumericVector seed_0(seed_p); 
+ unsigned long long int seed = Rcpp::as<unsigned long long int>(seed_0);  
+
+ NumericVector conv_par_0(conv_par_p); 
+ double conv_par = Rcpp::as<double>(conv_par_0);  
+ 
+ NumericVector rate_step_sim_0(rate_step_sim_p); 
+ double rate_step_sim = Rcpp::as<double>(rate_step_sim_0);   
+ 
+ NumericVector verbose_0(verbose_p); 
+ unsigned long long int verbose = Rcpp::as<unsigned long long int>(verbose_0);
+
+ //inp.b 
+  
+ bool flg_var_value;
+ flg_var_value=0;
+ if(var_value.compare("0")!=0){
+  flg_var_value=1;
+ }
+ 
+ bool flg_var_null;
+ flg_var_null=0;
+ if(var_null.compare("0")!=0){
+  flg_var_null=1;
+ }
+ 
+ CharacterVector vy0 = Data[var_path];
+ vector<string> vy = Rcpp::as<vector<string> >(vy0);
+  
+ NumericVector vc0 = Data[var_conv];
+ vector<unsigned long int> vc = Rcpp::as<vector<unsigned long int> >(vc0);
+ 
+ vector<double> vv;
+ if(flg_var_value==1){
+  NumericVector vv0 = Data[var_value];
+  vv = Rcpp::as<vector<double> >(vv0);
+ }
+ 
+ vector<unsigned long int> vn;
+ if(flg_var_null==1){
+  NumericVector vn0 = Data[var_null];
+  vn = Rcpp::as<vector<unsigned long int> >(vn0);
+ } 
+  
+ unsigned long int i,j,k,lvy,ssize;
+ unsigned long int nchannels,nchannels_sim,npassi;
+ bool cfirst;
+ unsigned long int start_pos,end_pos;
+ string s,channel,path;
+ map<string,unsigned long int> mp_channels,mp_channels_sim;
+ map< unsigned long int, vector<long int> > mp_channels_sim_inv;
+ map<unsigned long int,unsigned long int> mp_npassi;
+ vector<unsigned long int> vnpassi;
+    
+ lvy=(unsigned long int) vy.size();
+   
+ //////////////////////
+ //CODIFICA DA ONE STEP 
+ //////////////////////
+    
+ //mappa dei conversion value
+ unsigned long int l_vui=0;
+ map<double,unsigned long int> mp_vui;
+ vector<double> v_vui;
+ double vui;
+
+ vector<string> rchannels;
+ string channel_j;
+  
+ nchannels=0;
+ nchannels_sim=0;
+ 
+ vector<string> vy2(lvy);
+ 
+ mp_channels["(start)"]=0;
+ vector<string> vchannels;
+ vchannels.push_back("(start)");     
+ ++nchannels;
+
+ vector<string> vchannels_sim;
+
+ //definizione mappa conversion value
+ if(flg_var_value==1){
+  for(i=0;i<lvy;i++){
+   if(vc[i]>0){
+    vui=vv[i]/vc[i];
+    if(mp_vui.find(vui)==mp_vui.end()){
+     mp_vui[vui]=l_vui;
+     v_vui.push_back(vui);
+     ++l_vui;    
+    }
+   }
+  }
+ }
+ 
+ //ricodifica nomi canale in interi
+   
+ for(i=0;i<lvy;i++){
+    
+  s=vy[i];
+  s+=sep[0];
+  ssize=(unsigned long int) s.size();
+  channel="";
+  path="";
+  j=0;
+  npassi=0;
+     
+  //medium.touch
+  
+  while(j<ssize){  
+         
+   cfirst=1;
+   while(s[j]!=sep[0]){ 
+    if(cfirst==0){   
+     if(s[j]!=' '){
+      end_pos=j;     
+     }
+    }else if((cfirst==1) & (s[j]!=' ')){
+     cfirst=0;
+     start_pos=j;
+     end_pos=j;
+    }
+    ++j;     
+   }
+   
+   if(cfirst==0){
+    channel=s.substr(start_pos,(end_pos-start_pos+1));
+   
+    if(mp_channels.find(channel) == mp_channels.end()){
+     mp_channels[channel]=nchannels;
+     vchannels.push_back(channel);
+     ++nchannels;
+    }
+			 
+    if(npassi==0){
+	 path="";
+    }else{
+     path+=" ";
+    }
+     
+    path+=to_string(mp_channels[channel]);
+    ++npassi;      
+           
+   }//if end_pos
+   
+   channel="";
+   ++j;
+   
+  }//end while channel
+    
+  vy[i]=path;
+  ++npassi;
+ 
+ }//end for
+
+ mp_channels["(conversion)"]=nchannels;
+ vchannels.push_back("(conversion)");    
+ ++nchannels;
+  
+ mp_channels["(null)"]=nchannels;
+ vchannels.push_back("(null)");     
+ ++nchannels;
+ 
+ //riconduco a order=1
+    	
+ nchannels_sim=0;
+   
+ mp_channels_sim["(start)"]=0;
+ vchannels_sim.push_back("(start)");
+ ++nchannels_sim;
+   
+ unsigned long int ichannel,ichannel_old,vpi,vci,vni; 
+ bool flg_next_path,flg_next_null;
+ unsigned long int start_pos_last,nc;
+ 
+ vector<long int> vtmp(order);
+   
+ for(i=0;i<lvy;i++){
+  
+   s=vy[i];
+   ssize=(unsigned long int) s.size();
+  
+   channel="";
+   ichannel_old=0;
+   path="";
+   j=0; 
+   nc=0;
+   start_pos=0;
+   end_pos=0;
+   start_pos_last=0; 
+      
+   while(j<ssize){ 
+    
+    while((j<ssize) & (nc<order)){
+     
+ 	if(s[j]==' '){
+ 	 nc=nc+1;
+ 	 if(nc==1){
+ 	  start_pos=j;
+ 	 }
+ 	}else{
+ 	 end_pos=j;	
+ 	}
+ 	
+     ++j;
+    
+    } //while(s[j]!=' ') 
+    
+    channel=s.substr(start_pos_last,(end_pos-start_pos_last+1));
+    	
+    if(mp_channels_sim.find(channel) == mp_channels_sim.end()){
+     mp_channels_sim[channel]=nchannels_sim;
+	 
+	 vtmp=split_string(channel,order);
+	 mp_channels_sim_inv[nchannels_sim]=vtmp;
+    
+	 vchannels_sim.push_back(channel);
+     ++nchannels_sim;
+    }
+    
+    ichannel=mp_channels_sim[channel];
+        
+    if(ichannel!=ichannel_old){
+     path+=to_string(ichannel);
+     path+=" ";
+    }   
+    
+    ichannel_old=ichannel;
+
+    if((end_pos+1)==ssize){break;}; 
+    j=start_pos+1;
+    start_pos_last=j;   
+    nc=0;
+  
+   }//end while(j<ssize)
+  
+   vy2[i]="0 "+path+"e";
+ 	
+ }//end for i
+  
+ mp_channels_sim["(conversion)"]=nchannels_sim;
+ vchannels_sim.push_back("(conversion)");    
+ ++nchannels_sim;
+   
+ mp_channels_sim["(null)"]=nchannels_sim;
+ vchannels_sim.push_back("(null)");     
+ ++nchannels_sim;
+    
+ /////////////////////////////////////////////////////
+ //CREAZIONE DELLE MATRICI FUNZIONALI ALLE SIMULAZIONI
+ ////////////////////////////////////////////////////
+  
+ string channel_old;
+  
+ Fx S(nchannels_sim,nchannels_sim);
+  
+ Fx fV(nchannels_sim,l_vui);
+   
+ for(i=0;i<lvy;i++){
+     
+  flg_next_path=0;
+  flg_next_null=0;
+                            
+  s=vy2[i];
+  s+=" ";
+  ssize= (unsigned long int) s.size();
+  
+  channel="";
+  ichannel_old=0;
+  ichannel=0;
+ 
+  j=0;
+  npassi=0;
+  
+  vci=vc[i];
+  if(flg_var_null==1){
+   vni=vn[i];
+  }else{
+   vni=0;
+  }      
+  vpi=vci+vni;
+   
+  while((j<ssize) & (flg_next_path==0)){
+      
+   while(s[j]!=' '){
+  
+    if(j<ssize){
+     channel+=s[j];
+    }
+    j=j+1;
+   }
+               
+   if(channel[0]!='0'){//se non è il channel start
+   
+    if(channel[0]=='e'){ //stato finale
+    
+     ++npassi;
+     
+     if(vci>0){ //se ci sono conversion
+      ichannel=nchannels_sim-2;
+      S.add(ichannel_old,ichannel,vci);
+    
+      if(flg_var_value==1){
+       vui=vv[i]/vci;
+	   fV.add(ichannel_old,mp_vui[vui],vci);
+      }
+
+      if(vni>0){
+       flg_next_null=1;  
+      }else{
+       flg_next_path=1;
+      }
+             
+     }
+    
+     if(((vni>0) | (flg_next_null==1)) & (flg_next_path==0)){ //se non ci sono conversion
+      ichannel=nchannels_sim-1;
+      S.add(ichannel_old,ichannel,vni);
+      flg_next_path=1;
+     }
+    
+    }else{ //stato non finale
+     
+     if(vpi>0){
+      ichannel=atol(channel.c_str());
+      S.add(ichannel_old,ichannel,vpi);
+     }
+   
+    }
+   
+    if(flg_next_path==0){
+     ++npassi;
+    }
+   }else{ //stato iniziale
+   
+    ichannel=0;
+   
+   }
+  
+   if(flg_next_path==0){
+    ichannel_old=ichannel;
+   }
+     
+   if(flg_next_path==0){
+    channel="";
+    j=j+1;   
+   }
+   
+  }//end while j<size
+      
+ }//end for 
+ 
+ //out matrice di transizione
+ 
+ List res_mtx; 
+ 
+ if(out_more==1){
+   res_mtx=S.tran_matx(vchannels_sim);
+ }
+   
+ //f.r. transizione
+ S.cum(); 
+    
+ //f.r. conversion value
+ if(flg_var_value==1){
+  fV.cum();
+ }
+    
+ //SIMULAZIONI
+   
+ unsigned long int max_npassi;
+ long int id0=0;
+
+ //#omp_get_thread_num()
+    
+ if(max_step==0){
+  max_npassi=nchannels_sim*10;
+ }else{
+  max_npassi=1e6;     
+ }
+ if(nsim_start==0){
+  nsim_start=1e5;
+ }
+     
+ unsigned long int c=0,npassi0=0,k0=0,c_last=0,i0=0;
+ vector<bool> C(nchannels,0);
+ double sval0=0; 
+ bool flg_exit=0;
+  
+ unsigned long int run;
+ unsigned long int nch0; 
+ double sn=0;
+ double sm=0;
+  
+ vector< vector<double> > T(nfold,vector<double>(nchannels,0));
+ vector< vector<double> > V(nfold,vector<double>(nchannels,0));
+ 
+ nch0=nchannels-3;
+
+ vector< vector<double> > TV(nfold,vector<double>(nch0,0));
+ vector<double> rTV(nch0,0);
+ 
+ vector< vector<double> > VV(nfold,vector<double>(nch0,0));
+ vector<double> rVV(nch0,0);
+ 
+ vector<unsigned long int> nconv(nfold,0);
+ vector<double> ssval(nfold,0);
+ 
+ vector<double> TV_fin(nch0);
+ vector<double> VV_fin(nch0);
+ vector<double> vtmp1(nfold);
+ vector<double> v_res_conv(nfold);
+   
+ omp_set_dynamic(0);
+ omp_set_num_threads(ncore);
+ 
+ double max_res_conv=numeric_limits<double>::infinity();
+ double min_res_conv;
+ double res_conv;
+ 
+ unsigned long int id_mz,run_min_res_conv=0;
+  
+ while(max_res_conv>conv_par){
+	
+  min_res_conv=numeric_limits<double>::infinity(); 
+	
+  #pragma omp parallel for firstprivate(i0,c,npassi0,k0,c_last,C,sval0,flg_exit,sn,sm,id0,nfold,nsim_start,mp_channels_sim_inv,max_npassi,nchannels_sim,order,flg_var_value,nchannels,S,fV,res_conv) shared(nconv,ssval,T,TV,rTV,V,VV,rVV) schedule(static) 
+  for(run=0; run<(unsigned long int) nfold; run++){
+	
+   std::mt19937 generator(seed+run);  
+   uniform_real_distribution<double> distribution(0,1);
+    
+   for(i0=0; i0<(unsigned long int) (nsim_start/nfold); i0++){
+       	        
+     c=0;
+     npassi0=0;
+ 	    
+     for(k0=0; k0<nchannels; k0++){ //svuoto il vettore del flag canali visitati
+      C[k0]=0;
+     }
+    
+     C[c]=1; //assegno 1 al channel start
+     
+ 	 flg_exit=0;
+ 	
+     while((npassi0<=max_npassi) & (flg_exit==0)){ //interrompo quando raggiungo il massimo numero di passi
+      
+      c=S.sim(c,distribution(generator));
+      
+      if(c==nchannels_sim-2){ //se ho raggiunto lo stato conversion interrompo
+       flg_exit=1;
+      }else if(c==nchannels_sim-1){ //se ho raggiunto lo stato null interrompo
+       flg_exit=1;
+      }
+      
+      if(flg_exit==0){
+        if(order==1){
+          C[c]=1; //flaggo con 1 il canale visitato   
+        }else{       
+         for(k0=0; k0<order; k0++){
+           id0=(unsigned long int)mp_channels_sim_inv[c][k0];
+           if(id0>=0){
+            C[id0]=1;
+           }else{
+            break;     
+           }
+          }
+        }
+         
+        c_last=c; //salvo il canale visitato
+        ++npassi0;
+      }
+    
+     }//end while npassi0 
+ 	
+     
+     if(c==nchannels_sim-2){ //solo se ho raggiunto la conversion assegno +1 ai canali interessati (se ho raggiunto il max numero di passi è come se fossi andato a null)
+      
+     nconv[run]=nconv[run]+1;//incremento le conversion
+      
+     //genero per il canale c_last un valore di conversion "sval0"
+     if(flg_var_value==1){
+      sval0=v_vui[fV.sim(c_last,distribution(generator))];
+     }   
+         
+     ssval[run]=ssval[run]+sval0;
+       
+     for (k0=0; k0<nchannels; k0++){
+       if(C[k0]==1){
+         T[run][k0]=T[run][k0]+1;
+        if(flg_var_value==1){
+          V[run][k0]=V[run][k0]+sval0;
+        }
+       }
+      }
+    
+     }//end if conv
+           
+   }//end for i
+     
+   T[run][0]=0; //pongo channel start = 0
+   T[run][nchannels-2]=0; //pongo channel conversion = 0 
+   T[run][nchannels-1]=0; //pongo channel null = 0 
+   
+   sn=0; 
+   for(k0=0;k0<lvy; k0++){
+    sn=sn+vc[k0];
+   }
+    
+   sm=0;
+   for(k0=0;k0<nchannels-1; k0++){
+    sm=sm+T[run][k0];
+   }
+   
+   for (k0=1; k0<(nch0+1); k0++){
+    if(sm>0){
+     TV[run][k0-1]=(T[run][k0]/sm)*sn;
+    }
+   }
+     
+   if(flg_var_value==1){
+  
+    V[run][0]=0; //pongo channel start = 0
+    V[run][nchannels-2]=0; //pongo channel conversion = 0 
+    V[run][nchannels-1]=0; //pongo channel null = 0 
+      
+    sn=0;
+    for(k0=0;k0<lvy; k0++){
+     sn=sn+vv[k0];
+    }
+    
+    sm=0;
+    for(k0=0;k0<nchannels-1; k0++){
+     sm=sm+V[run][k0];
+    }
+      
+    for(k0=1; k0<(nch0+1); k0++){
+     if(sm>0){
+      VV[run][k0-1]=(V[run][k0]/sm)*sn;
+     }
+    }
+     
+   }
+  
+  } //end for run
+    
+  sn=0; 
+  for(k=0;k<lvy; k++){
+   sn=sn+vc[k];
+  }
+   
+  for(k=0; k<nch0; k++){ 
+   for(run=0; run<nfold; run++){
+    vtmp1[run]=TV[run][k];
+   }
+   sort(vtmp1.begin(), vtmp1.end(), std::greater<double>());
+   id_mz=(unsigned long int) (nfold/2);
+   if(nfold % 2 == 0){
+	TV_fin[k]=(vtmp1[id_mz-1]+vtmp1[id_mz])/2;   
+   }else{
+	TV_fin[k]=vtmp1[id_mz];   
+   }
+  }
+   
+  if(flg_var_value==1){ 
+
+   for(k=0; k<nch0; k++){ 
+    for(run=0; run<nfold; run++){
+     vtmp1[run]=VV[run][k];
+    }
+    sort(vtmp1.begin(), vtmp1.end(), std::greater<double>());
+    id_mz=(unsigned long int) (nfold/2);
+    if(nfold % 2 == 0){
+	 VV_fin[k]=(vtmp1[id_mz-1]+vtmp1[id_mz])/2;   
+    }else{
+	 VV_fin[k]=vtmp1[id_mz];   
+    }
+   }  
+  
+  } 
+   
+  max_res_conv=0;
+  for(run=0; run<nfold; run++){
+	  
+   res_conv=0;
+   for(k=0; k<nch0; k++){
+    res_conv=res_conv+abs(TV[run][k]-TV_fin[k]);
+   }
+   res_conv=res_conv/sn;
+   if(res_conv>max_res_conv){
+    max_res_conv=res_conv;
+   }
+   if(res_conv<min_res_conv){
+    min_res_conv=res_conv;
+	run_min_res_conv=run;
+   }
+   
+  }
+   
+  if(verbose==1){ 
+   if(max_res_conv>conv_par){
+    Rcout << "Number of simulations: "+to_string(nsim_start) + " - Reaching convergence (wait...): "+ to_string(max_res_conv) << endl;
+   }else{
+    Rcout << "Number of simulations: "+to_string(nsim_start) + " - Convergence reached: "+ to_string(max_res_conv) << endl;  
+   }
+  }
+  
+  nsim_start=nsim_start*rate_step_sim;
+
+ }//end while(res_conv>conv_par)
+     
+ vector<string> vchannels0(nch0);
+ for(k=1; k<(nch0+1); k++){
+  vchannels0[k-1]=vchannels[k];
+ }
+  
+ if(flg_var_value==1){ 
+ 
+  if(out_more==0){
+  
+   return List::create(Named("channel_name")=vchannels0, Named("total_conversion") = TV[run_min_res_conv], Named("total_conversion_value") = VV[run_min_res_conv] );
+  
+  }else{
+	
+   //removal effects conversion	
+   for(k=1; k<nch0; k++){
+    rTV[k-1]=T[run_min_res_conv][k]/nconv[run_min_res_conv];
+   } 
+
+   //removal effects conversion value	
+   for(k=1; k<(nch0+1); k++){
+    rVV[k-1]=V[run_min_res_conv][k]/ssval[run_min_res_conv];
+   } 
+      
+   List res1=List::create(Named("channel_name")=vchannels0, Named("total_conversions") = TV[run_min_res_conv], Named("total_conversion_value") = VV[run_min_res_conv], Named("total_conversions_run") = TV, Named("total_conversion_value_run") = VV );
+   List res3=List::create(Named("channel_name")=vchannels0, Named("removal_effects_conversion") = rTV, Named("removal_effects_conversion_value") = rVV);
+   return List::create(Named("result") = res1, Named("transition_matrix")=res_mtx, Named("removal_effects") = res3);
+  
+  } 
+ 
+ }else{
+     
+  if(out_more==0){
+  
+   return List::create(Named("channel_name")=vchannels0, Named("total_conversions") = TV[run_min_res_conv]);
+  
+  }else{
+	  
+   //removal effects conversion	
+   for(k=1; k<(nch0+1); k++){
+    rTV[k-1]=T[run_min_res_conv][k]/nconv[run_min_res_conv];
+   } 
+   
+   List res1=List::create(Named("channel_name")=vchannels0, Named("total_conversions") = TV[run_min_res_conv], Named("total_conversions_run") = TV);
+   List res3=List::create(Named("channel_name")=vchannels0, Named("removal_effects") = rTV);
+   return List::create(Named("result") = res1, Named("transition_matrix")=res_mtx, Named("removal_effects") = res3);
+  
+  } 
+    
+ }
+  
+ END_RCPP
+
+}	
+
+
+RcppExport SEXP transition_matrix_cpp(SEXP Data_p, SEXP var_path_p, SEXP var_conv_p, SEXP var_null_p, SEXP order_p, SEXP sep_p, SEXP flg_equal_p)
+{
+ 
+ BEGIN_RCPP
+
+ //inp.a
+  
+ List Data(Data_p);
+ 
+ CharacterVector var_path_0(var_path_p);
+ string var_path = Rcpp::as<string>(var_path_0);
+ 
+ CharacterVector var_conv_0(var_conv_p);
+ string var_conv = Rcpp::as<string>(var_conv_0);
+  
+ CharacterVector var_null_0(var_null_p); 
+ string var_null = Rcpp::as<string>(var_null_0);
+ 
+ NumericVector order_0(order_p); 
+ unsigned long long int order = Rcpp::as<unsigned long long int>(order_0);
+  
+ CharacterVector sep_0(sep_p); 
+ string sep = Rcpp::as<string>(sep_0);
+
+ NumericVector flg_equal_0(flg_equal_p); 
+ unsigned long long int flg_equal = Rcpp::as<unsigned long long int>(flg_equal_0);
+ 
+ //inp.b 
+   
+ bool flg_var_null;
+ flg_var_null=0;
+ if(var_null.compare("0")!=0){
+  flg_var_null=1;
+ }
+ 
+ CharacterVector vy0 = Data[var_path];
+ vector<string> vy = Rcpp::as<vector<string> >(vy0);
+  
+ NumericVector vc0 = Data[var_conv];
+ vector<unsigned long int> vc = Rcpp::as<vector<unsigned long int> >(vc0);
+  
+ vector<unsigned long int> vn;
+ if(flg_var_null==1){
+  NumericVector vn0 = Data[var_null];
+  vn = Rcpp::as<vector<unsigned long int> >(vn0);
+ } 
+  
+ unsigned long int i,j,lvy,ssize;
+ unsigned long int nchannels,nchannels_sim,npassi;
+ bool cfirst;
+ unsigned long int start_pos,end_pos;
+ string s,channel,path;
+ map<string,unsigned long int> mp_channels,mp_channels_sim;
+ map< unsigned long int, vector<long int> > mp_channels_sim_inv;
+ map<unsigned long int,unsigned long int> mp_npassi;
+ vector<unsigned long int> vnpassi;
+    
+ lvy=(unsigned long int) vy.size();
+   
+ //////////////////////
+ //CODIFICA DA ONE STEP 
+ //////////////////////
+    
+ //mappa dei conversion value
+ map<double,unsigned long int> mp_vui;
+ vector<double> v_vui;
+
+ vector<string> rchannels;
+ string channel_j;
+  
+ nchannels=0;
+ nchannels_sim=0;
+ 
+ vector<string> vy2(lvy);
+ 
+ mp_channels["(start)"]=0;
+ vector<string> vchannels;
+ vchannels.push_back("(start)");     
+ ++nchannels;
+
+ vector<string> vchannels_sim;
+ 
+ //ricodifica nomi canale in interi
+  
+ for(i=0;i<lvy;i++){
+       
+  s=vy[i];
+  s+=sep[0];
+  ssize=(unsigned long int) s.size();
+  channel="";
+  path="";
+  j=0;
+  npassi=0;
+   
+  //medium.touch
+  
+  while(j<ssize){  
+         
+   cfirst=1;
+   while(s[j]!=sep[0]){ 
+    if(cfirst==0){   
+     if(s[j]!=' '){
+      end_pos=j;     
+     }
+    }else if((cfirst==1) & (s[j]!=' ')){
+     cfirst=0;
+     start_pos=j;
+     end_pos=j;
+    }
+    ++j;     
+   }
+   
+   if(cfirst==0){
+    channel=s.substr(start_pos,(end_pos-start_pos+1));
+   
+    if(mp_channels.find(channel) == mp_channels.end()){
+     mp_channels[channel]=nchannels;
+     vchannels.push_back(channel);
+     ++nchannels;
+    }
+			 
+    if(npassi==0){
+	 path="";
+    }else{
+     path+=" ";
+    }
+     
+    path+=to_string(mp_channels[channel]);
+    ++npassi;      
+           
+   }//if end_pos
+   
+   channel="";
+   ++j;
+   
+  }//end while channel
+    
+  vy[i]=path;
+  ++npassi;
+ 
+ }//end for
+
+ mp_channels["(conversion)"]=nchannels;
+ vchannels.push_back("(conversion)");    
+ ++nchannels;
+  
+ mp_channels["(null)"]=nchannels;
+ vchannels.push_back("(null)");     
+ ++nchannels;
+ 
+ //riconduco a order=1
+    
+ nchannels_sim=0;
+   
+ mp_channels_sim["(start)"]=0;
+ vchannels_sim.push_back("(start)");
+ ++nchannels_sim;
+   
+ unsigned long int ichannel,ichannel_old,vpi,vci,vni; 
+ bool flg_next_path,flg_next_null;
+ unsigned long int start_pos_last,nc;
+ 
+ vector<long int> vtmp(order);
+
+ for(i=0;i<lvy;i++){ 
+   
+   s=vy[i];
+   
+   ssize=(unsigned long int) s.size();
+  
+   channel="";
+   ichannel_old=0;
+   path="";
+   j=0; 
+   nc=0;
+   start_pos=0;
+   end_pos=0;
+   start_pos_last=0; 
+      
+   while(j<ssize){ 
+    
+    while((j<ssize) & (nc<order)){
+     
+ 	if(s[j]==' '){
+ 	 nc=nc+1;
+ 	 if(nc==1){
+ 	  start_pos=j;
+ 	 }
+ 	}else{
+ 	 end_pos=j;	
+ 	}
+ 	
+     ++j;
+    
+    } //while(s[j]!=' ') 
+    
+    channel=s.substr(start_pos_last,(end_pos-start_pos_last+1));
+    	
+    if(mp_channels_sim.find(channel) == mp_channels_sim.end()){
+     mp_channels_sim[channel]=nchannels_sim;
+	 
+	 vtmp=split_string(channel,order);
+	 mp_channels_sim_inv[nchannels_sim]=vtmp;
+    
+	 vchannels_sim.push_back(channel);
+     ++nchannels_sim;
+    }
+    
+    ichannel=mp_channels_sim[channel];
+        
+	if(flg_equal==0){	
+     if(ichannel!=ichannel_old){
+      path+=to_string(ichannel);
+      path+=" ";
+	  ichannel_old=ichannel;
+     }   
+    }else{
+     path+=to_string(ichannel);
+     path+=" ";	
+	}
+    
+    if((end_pos+1)==ssize){break;}; 
+    j=start_pos+1;
+    start_pos_last=j;   
+    nc=0;
+  
+   }//end while(j<ssize)
+  
+   vy2[i]="0 "+path+"e";
+   
+ }//end for i
+  
+ mp_channels_sim["(conversion)"]=nchannels_sim;
+ vchannels_sim.push_back("(conversion)");    
+ ++nchannels_sim;
+   
+ mp_channels_sim["(null)"]=nchannels_sim;
+ vchannels_sim.push_back("(null)");     
+ ++nchannels_sim;
+  
+ // /////////////////////////////////////////////////////
+ // //CREAZIONE DELLE MATRICI FUNZIONALI ALLE SIMULAZIONI
+ // ////////////////////////////////////////////////////
+ 
+ string channel_old;
+  
+ Fx S(nchannels_sim,nchannels_sim);
+     
+ for(i=0;i<lvy;i++){
+     
+  flg_next_path=0;
+  flg_next_null=0;
+                            
+  s=vy2[i];
+  s+=" ";
+  ssize= (unsigned long int) s.size();
+  
+  channel="";
+  ichannel_old=0;
+  ichannel=0;
+ 
+  j=0;
+  npassi=0;
+  
+  vci=vc[i];
+  if(flg_var_null==1){
+   vni=vn[i];
+  }else{
+   vni=0;
+  }      
+  vpi=vci+vni;
+   
+  while((j<ssize) & (flg_next_path==0)){
+      
+   while(s[j]!=' '){
+  
+    if(j<ssize){
+     channel+=s[j];
+    }
+    j=j+1;
+   }
+               
+   if(channel[0]!='0'){//se non è il channel start
+    
+     if(channel[0]=='e'){ //stato finale
+     
+      ++npassi;
+      
+      if(vci>0){ //se ci sono conversion
+       ichannel=nchannels_sim-2;
+	   S.add(ichannel_old,ichannel,vci);
+    
+       if(vni>0){
+        flg_next_null=1;  
+       }else{
+        flg_next_path=1;
+       }
+              
+      }
+     
+      if(((vni>0) | (flg_next_null==1)) & (flg_next_path==0)){ //se non ci sono conversion
+       ichannel=nchannels_sim-1;
+       S.add(ichannel_old,ichannel,vni);
+       flg_next_path=1;
+      }
+     
+     }else{ //stato non finale
+      
+      if(vpi>0){
+       ichannel=atol(channel.c_str());
+	   S.add(ichannel_old,ichannel,vpi);
+	  }
+    
+     }
+    
+     if(flg_next_path==0){
+      ++npassi;
+     }
+    }else{ //stato iniziale
+   
+     ichannel=0;
+   
+    }
+  
+    if(flg_next_path==0){
+     //channel_old=channel;
+     ichannel_old=ichannel;
+    }
+     
+   if(flg_next_path==0){
+    channel="";
+    j=j+1;   
+   }
+   
+  }//end while j<size
+      
+ }//end for 
+ 
+ unsigned long int k,nch0;
+ nch0=nchannels-3;
+ 
+ vector<string> vchannels0(nch0);
+ for(k=1; k<(nch0+1); k++){
+  vchannels0[k-1]=vchannels[k];
+ }
+ 
+ 
+ List res=List::create(Named("transition_matrix")=S.tran_matx(vchannels_sim), Named("channels") = vchannels0);
+  
+ return(res);
+ 
+ END_RCPP
+ 
+} 	
