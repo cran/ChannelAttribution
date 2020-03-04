@@ -1006,7 +1006,7 @@ RcppExport SEXP markov_model_cpp(SEXP Data_p, SEXP var_path_p, SEXP var_conv_p, 
  
   if(out_more==0){
   
-   return List::create(Named("channel_name")=vchannels0, Named("total_conversion") = TV, Named("total_conversion_value") = VV );
+   return List::create(Named("channel_name")=vchannels0, Named("total_conversions") = TV, Named("total_conversion_value") = VV );
   
   }else{
    
