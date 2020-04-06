@@ -11,9 +11,6 @@
 #define ARMA_USE_CXX11
 #define ARMA_64BIT_WORD
 
-#include <omp.h>
-// [[Rcpp::plugins(openmp)]]
-
 #ifndef BEGIN_RCPP
 #define BEGIN_RCPP
 #endif
@@ -1182,9 +1179,6 @@ RcppExport SEXP choose_order_cpp(SEXP Data_p, SEXP var_path_p, SEXP var_conv_p, 
  vector<double> vuroc_corr(max_order);
  vector<unsigned long int> vorder(max_order);
     
- omp_set_dynamic(0);
- omp_set_num_threads(ncore); 
- #pragma omp parallel for firstprivate(lvy,vc,vn,roc_npt,nchannels) shared(vorder,vuroc,vuroc_corr,L_roc) schedule(static) 
   
  for(order=1;order<=max_order;order++){ 
   
@@ -1930,10 +1924,7 @@ RcppExport SEXP markov_model_mp_cpp(SEXP Data_p, SEXP var_path_p, SEXP var_conv_
  vector<double> VV_fin(nch0);
  vector<double> vtmp1(nfold);
  vector<double> v_res_conv(nfold);
-   
- omp_set_dynamic(0);
- omp_set_num_threads(ncore);
- 
+    
  double max_res_conv=numeric_limits<double>::infinity();
  double min_res_conv;
  double res_conv;
@@ -1944,7 +1935,6 @@ RcppExport SEXP markov_model_mp_cpp(SEXP Data_p, SEXP var_path_p, SEXP var_conv_
 	
   min_res_conv=numeric_limits<double>::infinity(); 
 	
-  #pragma omp parallel for firstprivate(i0,c,npassi0,k0,c_last,C,sval0,flg_exit,sn,sm,id0,nfold,nsim_start,mp_channels_sim_inv,max_npassi,nchannels_sim,order,flg_var_value,nchannels,S,fV,res_conv) shared(nconv,ssval,T,TV,rTV,V,VV,rVV) schedule(static) 
   for(run=0; run<(unsigned long int) nfold; run++){
 	
    std::mt19937 generator(seed+run);  

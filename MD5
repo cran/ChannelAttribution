@@ -1,8 +1,8 @@
-3269056d308540c364dd265922d1b10c *DESCRIPTION
+2223f392f700ecc9ecd01bda374fda54 *DESCRIPTION
 c4ba7b9b5834f545df8cc6b54885bb90 *NAMESPACE
-8dfcb15b688290be38aede29ef8e8bd3 *R/ChannelAttribution.R
+07852d9495993d94719a46d28a1ec61f *R/ChannelAttribution.R
 cb19b1555bffc631df81a901c9a332c4 *data/PathData.rda
-b34df039fe25e05a32bc91a63ddb4556 *man/ChannelAttribution-package.Rd
+d7bb2ddee895fa4fb83e76b4019fcd7a *man/ChannelAttribution-package.Rd
 35f836285db7b64f1bd924667a3a743a *man/Data.Rd
 89711176445baddc0b75a33fda4577ff *man/auto_markov_model.Rd
 635ff90a56f8fc77222e7ff59aeb71a1 *man/choose_order.Rd
@@ -10,8 +10,8 @@ b34df039fe25e05a32bc91a63ddb4556 *man/ChannelAttribution-package.Rd
 72eca1b528539d3a2351a95aa744e8fc *man/markov_model.Rd
 8455c03b8727291fca4499ad9669469a *man/markov_model_mp.Rd
 d673c57b46ce5f1fe40db22c52ed2acd *man/transition_matrix.Rd
-d5a351248bd01486d722dc9b58be31e0 *src/ChannelAttribution.cpp
+675589e24920fe18ee6689f696c9e408 *src/ChannelAttribution.cpp
 9ee8e539a2d4f8898563311d9b3e016e *src/ChannelAttribution.h
-0e9444ce4aab2a1499db0e18fc6bc16b *src/Makevars
-f37e80c9cd167b579668eb1aecf7631c *src/Makevars.win
+04571ba05ec0f36fd0a14e82c94299c5 *src/Makevars
+0457b0252464451deb654ea5d3ab475e *src/Makevars.win
 aec8a3ac56d6bc2e5ac197c750102e50 *src/init.c

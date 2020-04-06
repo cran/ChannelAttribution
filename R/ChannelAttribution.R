@@ -109,7 +109,7 @@ auto_markov_model=function(Data, var_path, var_conv, var_null, var_value=NULL, m
  if(!is.null(seed)){set.seed(seed)}
  
  order=choose_order(Data, var_path, var_conv, var_null, max_order=max_order, sep=sep, ncore=ncore, roc_npt=roc_npt, plot=plot)
- order=res[['suggested_order']]
+ order=order[['suggested_order']]
  
  res=markov_model_mp(Data, var_path, var_conv, var_value=var_value, var_null=var_null, order=order, nsim_start=nsim_start, max_step=max_step, out_more=out_more, sep=sep, ncore=ncore, nfold=nfold, seed=seed, conv_par=conv_par, rate_step_sim=rate_step_sim, verbose=verbose)
 
