@@ -13,7 +13,7 @@
 \usage{
 
 choose_order(Data, var_path, var_conv, var_null, max_order=10, sep=">", 
-             ncore=Inf, roc_npt=100, plot=TRUE)
+             ncore=1, roc_npt=100, plot=TRUE)
 
 }
 
@@ -25,9 +25,9 @@ choose_order(Data, var_path, var_conv, var_null, max_order=10, sep=">",
   \item{var_null}{column name of Data containing total paths that do not lead to conversion.}
   \item{max_order}{maximum Markov Model order considered.}
   \item{sep}{separator between channels.}
-  \item{ncore}{number of threads used in computation. Default is number of CPUs available.}
+  \item{ncore}{number of threads used in computation.}
   \item{roc_npt}{number of points used for approximating roc and auc.}
-  \item{plot}{if TRUE, a plot with penalized auc with respect to order is displayed.}
+  \item{plot}{if TRUE, a plot with penalized auc with respect to order will be displayed.}
 
 }
 

@@ -6,7 +6,7 @@
 
 \title{Heuristic models for the online attribution problem.}
 
-\description{Estimate theree heuristic models (first-touch, last-touch, linear) from customer journey data.
+\description{Estimate theree heuristic models (first-touch, last-touch and linear) from customer journey data.
 }
 
 

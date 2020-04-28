@@ -5,6 +5,7 @@
 #include <vector>
 #include <random>
 #include <numeric>
+#include <thread>
 
 #include <RcppArmadillo.h>
 
@@ -21,6 +22,8 @@
 
 using namespace std;
 using namespace Rcpp;
+//using namespace RcppThread;
+
 // [[Rcpp::depends(RcppArmadillo)]]
 using namespace arma;
 
@@ -68,7 +71,7 @@ RcppExport SEXP heuristic_models_cpp(SEXP Data_p, SEXP var_path_p, SEXP var_conv
  vector<string> vy = Rcpp::as<vector<string> >(vy0);
 
  NumericVector vc0 = Data[var_conv];
- vector<long long int> vc = Rcpp::as<vector<long long int> >(vc0);
+ vector<unsigned long int> vc = Rcpp::as<vector<unsigned long int> >(vc0);
 
  vector<double> vv;
  if(flg_var_value==1){
@@ -76,16 +79,16 @@ RcppExport SEXP heuristic_models_cpp(SEXP Data_p, SEXP var_path_p, SEXP var_conv
   vv = Rcpp::as<vector<double> >(vv0);
  }
  
- long long int i,j,k,lvy,ssize;
+ unsigned long int i,j,k,lvy,ssize;
  bool cfirst;
  unsigned long int start_pos,end_pos;
- long long int nchannels;
+ unsigned long int nchannels;
  string s,channel,channel_first,channel_last;
   
- lvy=(long long int) vy.size();
+ lvy=(unsigned long int) vy.size();
  nchannels=0;
  
- map<string,long long int> mp_channels;
+ map<string,unsigned long int> mp_channels;
  vector<string> vchannels;
 	  	
  map<string,double> mp_first_conv;
@@ -100,14 +103,14 @@ RcppExport SEXP heuristic_models_cpp(SEXP Data_p, SEXP var_path_p, SEXP var_conv
  vector<string> vchannels_unique;
  double nchannels_unique;
  string kchannel;
- long long int n_path_length;
+ unsigned long int n_path_length;
 
  for(i=0;i<lvy;i++){
 	 	 
   s=vy[i];
   
   s+=sep[0];
-  ssize=(long long int) s.size();
+  ssize=(unsigned long int) s.size();
   channel="";
   j=0;
   nchannels_unique=0;
@@ -116,7 +119,10 @@ RcppExport SEXP heuristic_models_cpp(SEXP Data_p, SEXP var_path_p, SEXP var_conv
   n_path_length=0;
   mp0_linear_conv.clear();
   mp0_linear_val.clear();
-     	   
+  
+  start_pos=0;
+  end_pos=0;  
+  
   while(j<ssize){  
          
    cfirst=1;
@@ -280,9 +286,10 @@ void Fx::init(unsigned long int nrow1, unsigned long int ncol1)
   nrows=nrow1;
 } 
 
+
 void Fx::add(unsigned long int ichannel_old, unsigned long int ichannel, unsigned long int vxi)
 {
-  
+    
   val0=S(ichannel_old,ichannel); //riempire f.p. transizione con vxi
   if(val0==0){
    lval0=lrS0[ichannel_old];
@@ -313,7 +320,7 @@ void Fx::cum()
 
 unsigned long int Fx::sim(unsigned long int c, double uni) 
 {
- 
+  
  s0=floor(uni*lrS[c]+1);
  
  for(k=0; k<lrS0[c]; k++){   
@@ -386,6 +393,7 @@ double Fx::pconv(unsigned long int ichannel, unsigned long int nchannels)
 } 
 
 
+
 vector<long int> split_string(const string &s, unsigned long int order) {
     
 	char delim=' ';
@@ -402,9 +410,18 @@ vector<long int> split_string(const string &s, unsigned long int order) {
     return result;
 }
 
-RcppExport SEXP markov_model_cpp(SEXP Data_p, SEXP var_path_p, SEXP var_conv_p, SEXP var_value_p, SEXP var_null_p, SEXP order_p, SEXP nsim_p, SEXP max_step_p, SEXP out_more_p, SEXP sep_p)
+
+
+// void print(auto &input)
+// {
+	// for (unsigned long int i = 0; i < (unsigned long int) input.size(); i++) {
+		// std::cout << input.at(i) << ' ';
+	// }
+// }
+
+RcppExport SEXP markov_model_cpp(SEXP Data_p, SEXP var_path_p, SEXP var_conv_p, SEXP var_value_p, SEXP var_null_p, SEXP order_p, SEXP nsim_p, SEXP max_step_p, SEXP out_more_p, SEXP sep_p, SEXP seed_p)
 {
-	 	
+	 	 
  BEGIN_RCPP
 
  //inp.a
@@ -424,22 +441,26 @@ RcppExport SEXP markov_model_cpp(SEXP Data_p, SEXP var_path_p, SEXP var_conv_p, 
  string var_null = Rcpp::as<string>(var_null_0);
  
  NumericVector order_0(order_p); 
- unsigned long long int order = Rcpp::as<unsigned long long int>(order_0);
+ unsigned long int order = Rcpp::as<unsigned long int>(order_0);
  
  NumericVector nsim_0(nsim_p); 
- unsigned long long int nsim = Rcpp::as<unsigned long long int>(nsim_0);
+ unsigned long int nsim = Rcpp::as<unsigned long int>(nsim_0);
 
  NumericVector max_step_0(max_step_p); 
- unsigned long long int max_step = Rcpp::as<unsigned long long int>(max_step_0);
+ unsigned long int max_step = Rcpp::as<unsigned long int>(max_step_0);
 
  NumericVector out_more_0(out_more_p); 
- unsigned long long int out_more = Rcpp::as<unsigned long long int>(out_more_0);
+ unsigned long int out_more = Rcpp::as<unsigned long int>(out_more_0);
  
  CharacterVector sep_0(sep_p); 
  string sep = Rcpp::as<string>(sep_0);
  
+ NumericVector seed_0(seed_p); 
+ unsigned long int seed = Rcpp::as<unsigned long int>(seed_0);
+ 
+ 
  //inp.b 
-  
+    
  bool flg_var_value;
  flg_var_value=0;
  if(var_value.compare("0")!=0){
@@ -545,6 +566,8 @@ RcppExport SEXP markov_model_cpp(SEXP Data_p, SEXP var_path_p, SEXP var_conv_p, 
   j=0;
   npassi=0;
   rchannels.clear();
+  start_pos=0;
+  end_pos=0;  
    
   //medium.touch
   
@@ -721,6 +744,9 @@ RcppExport SEXP markov_model_cpp(SEXP Data_p, SEXP var_path_p, SEXP var_conv_p, 
  Fx S(nchannels_sim,nchannels_sim);
   
  Fx fV(nchannels_sim,l_vui);
+ 
+ unsigned long int max_npassi; 
+ max_npassi=0; 
    
  for(i=0;i<lvy;i++){
 	 	 	 			 
@@ -734,6 +760,7 @@ RcppExport SEXP markov_model_cpp(SEXP Data_p, SEXP var_path_p, SEXP var_conv_p, 
   ichannel=0;
  
   j=0;
+  
   npassi=0;
   
   vci=vc[i];
@@ -810,8 +837,9 @@ RcppExport SEXP markov_model_cpp(SEXP Data_p, SEXP var_path_p, SEXP var_conv_p, 
    j=j+1;   
    
   }//end while j<size
-  
+    
   next_path:;
+  max_npassi=max(max_npassi,npassi);
     
  }//end for 
         
@@ -838,13 +866,16 @@ RcppExport SEXP markov_model_cpp(SEXP Data_p, SEXP var_path_p, SEXP var_conv_p, 
  }
  
  //distribuzione numeri uniformi
- double iu,nuf;
- nuf=1e6;
- NumericVector vunif=runif(nuf);
-   
+ //double iu,nuf;
+ //nuf=1e6;
+ //NumericVector vunif=runif(nuf);
+ 
+ mt19937 generator(seed);  
+ uniform_real_distribution<double> distribution(0,1);
+      
  //SIMULAZIONI
   
- unsigned long int c,c_last,nconv,max_npassi;
+ unsigned long int c,c_last,nconv;
  long int id0;
  double sval0,ssval;
  vector<bool> C(nchannels);
@@ -855,17 +886,15 @@ RcppExport SEXP markov_model_cpp(SEXP Data_p, SEXP var_path_p, SEXP var_conv_p, 
  sval0=0;
  ssval=0;
  c_last=0;
- iu=0;
- 
- if(max_step==0){
-  max_npassi=nchannels_sim*10;
- }else{
-  max_npassi=1e6;	 
+ //iu=0;
+  
+ if(max_step>0){
+  max_npassi=max_step;
  }
+  
  if(nsim==0){
   nsim=1e6;
  }
-
  
  for(i=0; i<nsim; i++){
 	 	 	   
@@ -880,9 +909,10 @@ RcppExport SEXP markov_model_cpp(SEXP Data_p, SEXP var_path_p, SEXP var_conv_p, 
       
   while(npassi<=max_npassi){ //interrompo quando raggiungo il massimo numero di passi
    
-   if(iu>=nuf){vunif=runif(nuf);iu=0;} //genero il canale da visitare
-   c=S.sim(c,vunif[iu]);
-   ++iu;
+   //if(iu>=nuf){vunif=runif(nuf);iu=0;} //genero il canale da visitare
+   //c=S.sim(c,vunif[iu]);
+   c=S.sim(c,distribution(generator));
+   //++iu;
    
    if(c==nchannels_sim-2){ //se ho raggiunto lo stato conversion interrompo
     goto go_to_conv;	
@@ -916,14 +946,15 @@ RcppExport SEXP markov_model_cpp(SEXP Data_p, SEXP var_path_p, SEXP var_conv_p, 
    
    //genero per il canale c_last un valore di conversion "sval0"
    if(flg_var_value==1){
-    if(iu>=nuf){vunif=runif(nuf);iu=0;} 
-    sval0=v_vui[fV.sim(c_last,vunif[iu])];
-    ++iu;
+    //if(iu>=nuf){vunif=runif(nuf);iu=0;} 
+    //sval0=v_vui[fV.sim(c_last,vunif[iu])];
+    sval0=v_vui[fV.sim(c_last,distribution(generator))];
+    //++iu;
    }   
    
    ssval=ssval+sval0;
      
-   for (k=0; k<nchannels; k++){
+   for(k=0; k<nchannels; k++){
     if(C[k]==1){
 	 T[k]=T[k]+1;
 	 if(flg_var_value==1){
@@ -938,7 +969,7 @@ RcppExport SEXP markov_model_cpp(SEXP Data_p, SEXP var_path_p, SEXP var_conv_p, 
  	
  }//end for i
  
-  
+   
  T[0]=0; //pongo channel start = 0
  unsigned long int nch0; 
  nch0=nchannels-3;
@@ -957,7 +988,7 @@ RcppExport SEXP markov_model_cpp(SEXP Data_p, SEXP var_path_p, SEXP var_conv_p, 
  
  vector<double> TV(nch0,0);
  vector<double> rTV(nch0,0);
- 
+  
  for (k=1; k<(nch0+1); k++){
   if(sm>0){
    TV[k-1]=(T[k]/sm)*sn;
@@ -1034,153 +1065,28 @@ RcppExport SEXP markov_model_cpp(SEXP Data_p, SEXP var_path_p, SEXP var_conv_p, 
 }	
 
 
+vector<unsigned long int> bounds(unsigned long int parts, unsigned long int mem) {
+    vector<unsigned long int>bnd;
+    unsigned long int delta = mem / parts;
+    unsigned long int reminder = mem % parts;
+    unsigned long int N1 = 0, N2 = 0;
+    bnd.push_back(N1);
+    for (unsigned long int i = 0; i < parts; ++i) {
+        N2 = N1 + delta;
+        if (i == parts - 1)
+            N2 += reminder;
+        bnd.push_back(N2);
+        N1 = N2;
+    }
+    return bnd;
+}
 
-RcppExport SEXP choose_order_cpp(SEXP Data_p, SEXP var_path_p, SEXP var_conv_p, SEXP var_null_p, SEXP max_order_p, SEXP sep_p, SEXP ncore_p, SEXP roc_npt_p)
+
+void W_choose_order_1(vector<string> vy, unsigned long int lvy, vector<unsigned long int> vc, vector<unsigned long int> vn, unsigned long int roc_npt, unsigned long int nchannels, vector<unsigned long int> &vorder, vector<double> &vuroc, vector<double> &vuroc_corr, List &L_roc, unsigned long int from_W, unsigned long int to_W)
 {
- 
- BEGIN_RCPP
 
- //inp.a
-  
- List Data(Data_p);
- 
- CharacterVector var_path_0(var_path_p);
- string var_path = Rcpp::as<string>(var_path_0);
- 
- CharacterVector var_conv_0(var_conv_p);
- string var_conv = Rcpp::as<string>(var_conv_0);
-  
- CharacterVector var_null_0(var_null_p); 
- string var_null = Rcpp::as<string>(var_null_0);
- 
- NumericVector max_order_0(max_order_p); 
- unsigned long long int max_order = Rcpp::as<unsigned long long int>(max_order_0);
-  
- CharacterVector sep_0(sep_p); 
- string sep = Rcpp::as<string>(sep_0);
 
- NumericVector ncore_0(ncore_p); 
- unsigned long long int ncore = Rcpp::as<unsigned long long int>(ncore_0);
- 
- NumericVector roc_npt_0(roc_npt_p); 
- unsigned long long int roc_npt = Rcpp::as<unsigned long long int>(roc_npt_0);
- 
- //inp.b 
-   
- CharacterVector vy0 = Data[var_path];
- vector<string> vy = Rcpp::as<vector<string> >(vy0);
-  
- NumericVector vc0 = Data[var_conv];
- vector<unsigned long int> vc = Rcpp::as<vector<unsigned long int> >(vc0);
-  
- vector<unsigned long int> vn;
- NumericVector vn0 = Data[var_null];
- vn = Rcpp::as<vector<unsigned long int> >(vn0);
-   
- unsigned long int i,j,lvy,ssize;
- unsigned long int nchannels,npassi;
- bool cfirst;
- unsigned long int start_pos,end_pos;
- string s,channel,path;
- map<string,unsigned long int> mp_channels,mp_channels_sim;
- map<unsigned long int,unsigned long int> mp_npassi;
- vector<unsigned long int> vnpassi;
-    
- lvy=(unsigned long int) vy.size();
-   
- //////////////////////
- //CODIFICA DA ONE STEP 
- //////////////////////
-      
- string channel_test="";
- string channel_old;
- 
- unsigned long int order;
- 
- nchannels=0;
-   
- mp_channels["(start)"]=0;
- vector<string> vchannels;
- vchannels.push_back("(start)");     
- ++nchannels;
- 
- //ricodifica nomi canale in interi
-   
- for(i=0;i<lvy;i++){
-	        
-  s=vy[i];
-  s+=sep[0];
-  ssize=(unsigned long int) s.size();
-  channel="";
-  path="";
-  j=0;
-  npassi=0;
-   
-  //medium.touch
-  
-  while(j<ssize){  
-         
-   cfirst=1;
-   while(s[j]!=sep[0]){
-    if(cfirst==0){   
-     if(s[j]!=' '){
-      end_pos=j;     
-     }
-    }else if((cfirst==1) & (s[j]!=' ')){
-     cfirst=0;
-     start_pos=j;
-     end_pos=j;
-    }
-    ++j;     
-   }
-   
-   if(cfirst==0){
-    channel=s.substr(start_pos,(end_pos-start_pos+1));
-   
-    if(mp_channels.find(channel) == mp_channels.end()){
-     mp_channels[channel]=nchannels;
-     vchannels.push_back(channel);
-     ++nchannels;
-    }
-			 
-    if(npassi==0){
-	 path="";
-    }else{
-     path+=" ";
-    }
-     
-    path+=to_string(mp_channels[channel]);
-    ++npassi;      
-           
-   }//if end_pos
-   
-   channel="";
-   ++j;
-   
-  }//end while channel
-    
-  vy[i]=path;
-  ++npassi;
-  
- }//end for
-  
- mp_channels["(conversion)"]=nchannels;
- vchannels.push_back("(conversion)");    
- ++nchannels;
-  
- mp_channels["(null)"]=nchannels;
- vchannels.push_back("(null)");     
- ++nchannels;
- 
- //riconduco a order=1
- 
- List L_roc, L_uroc;
- vector<double> vuroc(max_order);
- vector<double> vuroc_corr(max_order);
- vector<unsigned long int> vorder(max_order);
-    
-  
- for(order=1;order<=max_order;order++){ 
+ for(unsigned long int order = (from_W+1); order < (to_W+1); order++){
   
   string s,channel,path;
   unsigned long int nchannels_sim,i,ssize,ichannel_old,j,nc,start_pos,end_pos,start_pos_last,ichannel,npassi,vci,vni,vpi,k,h;  
@@ -1193,11 +1099,14 @@ RcppExport SEXP choose_order_cpp(SEXP Data_p, SEXP var_path_p, SEXP var_conv_p, 
   
   vector<double> vth(roc_npt);
   unsigned long int tp,fn,tn,fp;
-  vector<double> vtpr(roc_npt+1);
-  vector<double> vfpr(roc_npt+1);
   double th,tpr,fpr,tpr_old,fpr_old,auc;
 
   vector<unsigned long int> vlastc(lvy);  
+  
+  //output
+  
+  vector<double> vtpr(roc_npt+1);
+  vector<double> vfpr(roc_npt+1);
   
   nnodes=exp(lgamma(nchannels-3+order-1+1)-lgamma(order+1)-lgamma(nchannels-3-1+1));
   
@@ -1457,8 +1366,180 @@ RcppExport SEXP choose_order_cpp(SEXP Data_p, SEXP var_path_p, SEXP var_conv_p, 
    L_roc[to_string(order)]=Rcpp::List::create(Rcpp::Named("fpr")=vfpr,Rcpp::Named("tpr")=vtpr);
   
   }//end if(nnodes<lvy)
+ 
+ }
+  
+}
+
+
+RcppExport SEXP choose_order_cpp(SEXP Data_p, SEXP var_path_p, SEXP var_conv_p, SEXP var_null_p, SEXP max_order_p, SEXP sep_p, SEXP ncore_p, SEXP roc_npt_p)
+{
+ 
+ BEGIN_RCPP
+
+ //inp.a
+  
+ List Data(Data_p);
+ 
+ CharacterVector var_path_0(var_path_p);
+ string var_path = Rcpp::as<string>(var_path_0);
+ 
+ CharacterVector var_conv_0(var_conv_p);
+ string var_conv = Rcpp::as<string>(var_conv_0);
+  
+ CharacterVector var_null_0(var_null_p); 
+ string var_null = Rcpp::as<string>(var_null_0);
+ 
+ NumericVector max_order_0(max_order_p); 
+ unsigned long int max_order = Rcpp::as<unsigned long int>(max_order_0);
+  
+ CharacterVector sep_0(sep_p); 
+ string sep = Rcpp::as<string>(sep_0);
+
+ NumericVector ncore_0(ncore_p); 
+ unsigned long int ncore = Rcpp::as<unsigned long int>(ncore_0);
+ 
+ 
+ NumericVector roc_npt_0(roc_npt_p); 
+ unsigned long int roc_npt = Rcpp::as<unsigned long int>(roc_npt_0);
+ 
+ //inp.b 
    
- }//end for order
+ CharacterVector vy0 = Data[var_path];
+ vector<string> vy = Rcpp::as<vector<string> >(vy0);
+  
+ NumericVector vc0 = Data[var_conv];
+ vector<unsigned long int> vc = Rcpp::as<vector<unsigned long int> >(vc0);
+  
+ vector<unsigned long int> vn;
+ NumericVector vn0 = Data[var_null];
+ vn = Rcpp::as<vector<unsigned long int> >(vn0);
+   
+ unsigned long int i,j,lvy,ssize;
+ unsigned long int nchannels,npassi;
+ bool cfirst;
+ unsigned long int start_pos,end_pos;
+ string s,channel,path;
+ map<string,unsigned long int> mp_channels,mp_channels_sim;
+ map<unsigned long int,unsigned long int> mp_npassi;
+ vector<unsigned long int> vnpassi;
+    
+ lvy=(unsigned long int) vy.size();
+   
+ //////////////////////
+ //CODIFICA DA ONE STEP 
+ //////////////////////
+      
+ string channel_test="";
+ string channel_old;
+ 
+ //unsigned long int order;
+ 
+ nchannels=0;
+   
+ mp_channels["(start)"]=0;
+ vector<string> vchannels;
+ vchannels.push_back("(start)");     
+ ++nchannels;
+ 
+ //ricodifica nomi canale in interi
+   
+ for(i=0;i<lvy;i++){
+	        
+  s=vy[i];
+  s+=sep[0];
+  ssize=(unsigned long int) s.size();
+  channel="";
+  path="";
+  j=0;
+  npassi=0;
+  start_pos=0;
+  end_pos=0;
+   
+  //medium.touch
+  
+  while(j<ssize){  
+         
+   cfirst=1;
+   while(s[j]!=sep[0]){
+    if(cfirst==0){   
+     if(s[j]!=' '){
+      end_pos=j;     
+     }
+    }else if((cfirst==1) & (s[j]!=' ')){
+     cfirst=0;
+     start_pos=j;
+     end_pos=j;
+    }
+    ++j;     
+   }
+   
+   if(cfirst==0){
+    channel=s.substr(start_pos,(end_pos-start_pos+1));
+   
+    if(mp_channels.find(channel) == mp_channels.end()){
+     mp_channels[channel]=nchannels;
+     vchannels.push_back(channel);
+     ++nchannels;
+    }
+			 
+    if(npassi==0){
+	 path="";
+    }else{
+     path+=" ";
+    }
+     
+    path+=to_string(mp_channels[channel]);
+    ++npassi;      
+           
+   }//if end_pos
+   
+   channel="";
+   ++j;
+   
+  }//end while channel
+    
+  vy[i]=path;
+  ++npassi;
+  
+ }//end for
+  
+ mp_channels["(conversion)"]=nchannels;
+ vchannels.push_back("(conversion)");    
+ ++nchannels;
+  
+ mp_channels["(null)"]=nchannels;
+ vchannels.push_back("(null)");     
+ ++nchannels;
+ 
+ //riconduco a order=1
+ 
+ List L_roc, L_uroc;
+ vector<double> vuroc(max_order);
+ vector<double> vuroc_corr(max_order);
+ vector<unsigned long int> vorder(max_order);
+ 
+ vector<unsigned long int> limits = bounds(ncore, max_order);
+  
+ if(ncore==1){
+  
+  W_choose_order_1(vy, lvy, vc, vn, roc_npt, nchannels, ref(vorder), ref(vuroc), ref(vuroc_corr), ref(L_roc), limits[0], limits[1]);	  
+ 
+ }else{
+  
+  vector<thread> threads(ncore);
+
+  //Launch ncore threads:	
+  for(unsigned long int td=0; td<ncore; td++){
+   threads[td]=thread(W_choose_order_1, vy, lvy, vc, vn, roc_npt, nchannels, ref(vorder), ref(vuroc), ref(vuroc_corr), ref(L_roc), limits[td], limits[td+1]);
+  }
+
+  //Join the threads with the main thread
+  for(auto &t : threads){
+   t.join();
+  }  
+  
+ }
  
  L_uroc=Rcpp::List::create(Rcpp::Named("order")=vorder,Rcpp::Named("auc")=vuroc,Rcpp::Named("pauc")=vuroc_corr);
   
@@ -1468,6 +1549,156 @@ RcppExport SEXP choose_order_cpp(SEXP Data_p, SEXP var_path_p, SEXP var_conv_p, 
  
 } 	
 
+void W_markov_model_mp_1(unsigned long int seed, vector<double> v_vui, unsigned long int lvy, vector<unsigned long int> vc, unsigned long int nch0, vector<double> vv, unsigned long int nfold, unsigned long int nsim_start,  map< unsigned long int, vector<long int> > mp_channels_sim_inv, unsigned long int max_npassi, unsigned long int nchannels_sim, unsigned long int order, bool flg_var_value, unsigned long int nchannels, Fx S, Fx fV, vector<unsigned long int> &nconv, vector<double> &ssval, vector< vector<double> > &T, vector< vector<double> > &TV, vector< vector<double> > &V, vector< vector<double> > &VV, vector<double> &v_inc_path, unsigned long int from_W, unsigned long int to_W)
+{
+ 
+ long int id0;
+ unsigned long int i0,c,npassi0,k0,c_last=0,n_inc_path;
+ vector<bool> C(nchannels,0);
+ double sval0=0,sn,sm;
+ bool flg_exit;
+ 
+ for(unsigned long int run = from_W; run < to_W; run++){
+	 
+   mt19937 generator(seed+run);  
+   uniform_real_distribution<double> distribution(0,1);
+   
+   n_inc_path=0;   
+
+   for(i0=0; i0<(unsigned long int) (nsim_start/nfold); i0++){
+	          	        
+     c=0;
+     npassi0=0;
+ 	    
+     for(k0=0; k0<nchannels; k0++){ //svuoto il vettore del flag canali visitati
+      C[k0]=0;
+     }
+    
+     C[c]=1; //assegno 1 al channel start
+     
+ 	 flg_exit=0;
+ 	
+     while((npassi0<=max_npassi) & (flg_exit==0)){ //interrompo quando raggiungo il massimo numero di passi
+      
+      c=S.sim(c,distribution(generator));
+     
+      if(c==nchannels_sim-2){ //se ho raggiunto lo stato conversion interrompo
+       flg_exit=1;
+      }else if(c==nchannels_sim-1){ //se ho raggiunto lo stato null interrompo
+       flg_exit=1;
+      }
+      
+      if(flg_exit==0){
+        if(order==1){
+          C[c]=1; //flaggo con 1 il canale visitato   
+        }else{       
+         for(k0=0; k0<order; k0++){
+		   id0=mp_channels_sim_inv[c][k0];
+           if(id0>=0){
+            C[id0]=1;
+           }else{
+            break;     
+           }
+          }
+        }
+         
+        c_last=c; //salvo il canale visitato
+        ++npassi0;
+      }
+    	
+     }//end while npassi0 
+ 	
+     
+     if(c==nchannels_sim-2){ //solo se ho raggiunto la conversion assegno +1 ai canali interessati (se ho raggiunto il max numero di passi è come se fossi andato a null)
+      
+     nconv[run]=nconv[run]+1;//incremento le conversion
+      
+     //genero per il canale c_last un valore di conversion "sval0"
+     if(flg_var_value==1){
+      sval0=v_vui[fV.sim(c_last,distribution(generator))];
+     }   
+         
+     ssval[run]=ssval[run]+sval0;
+       
+     for (k0=0; k0<nchannels; k0++){
+       if(C[k0]==1){
+         T[run][k0]=T[run][k0]+1;
+        if(flg_var_value==1){
+          V[run][k0]=V[run][k0]+sval0;
+        }
+       }
+      }
+    
+     }else if(c!=nchannels_sim-1){ //se non ho raggiunto neanche lo stato NULL
+	   
+       n_inc_path=n_inc_path+1;	   
+		 	 
+	 }//end if conv
+           
+   }//end for i
+   
+   v_inc_path[run]=(double) n_inc_path/ (double) i0;
+       
+   T[run][0]=0; //pongo channel start = 0
+   T[run][nchannels-2]=0; //pongo channel conversion = 0 
+   T[run][nchannels-1]=0; //pongo channel null = 0 
+   
+   sn=0; 
+   for(k0=0;k0<lvy; k0++){
+    sn=sn+vc[k0];
+   }
+    
+   sm=0;
+   for(k0=0;k0<nchannels-1; k0++){
+    sm=sm+T[run][k0];
+   }
+   
+   for (k0=1; k0<(nch0+1); k0++){
+    if(sm>0){
+     TV[run][k0-1]=(T[run][k0]/sm)*sn;
+    }
+   }
+     
+   if(flg_var_value==1){
+  
+    V[run][0]=0; //pongo channel start = 0
+    V[run][nchannels-2]=0; //pongo channel conversion = 0 
+    V[run][nchannels-1]=0; //pongo channel null = 0 
+      
+    sn=0;
+    for(k0=0;k0<lvy; k0++){
+     sn=sn+vv[k0];
+    }
+    
+    sm=0;
+    for(k0=0;k0<nchannels-1; k0++){
+     sm=sm+V[run][k0];
+    }
+      
+    for(k0=1; k0<(nch0+1); k0++){
+     if(sm>0){
+      VV[run][k0-1]=(V[run][k0]/sm)*sn;
+     }
+    }
+     
+   }
+		
+ }//end for run
+
+}
+
+string f_print_perc(double num){ 
+ 
+ string res;
+ if(num>=1){
+  res=to_string((double)(floor(num*10000)/100)).substr(0,6);    
+ }else if(num>=0.1){ 
+  res=to_string((double)(floor(num*10000)/100)).substr(0,5); 
+ }else{
+  res=to_string((double)(floor(num*10000)/100)).substr(0,4);    	   
+ } 
+ return(res);
+}
 
 
 RcppExport SEXP markov_model_mp_cpp(SEXP Data_p, SEXP var_path_p, SEXP var_conv_p, SEXP var_value_p, SEXP var_null_p, SEXP order_p, SEXP nsim_start_p, SEXP max_step_p, SEXP out_more_p, SEXP sep_p, SEXP ncore_p, SEXP nfold_p, SEXP seed_p, SEXP conv_par_p, SEXP rate_step_sim_p, SEXP verbose_p)
@@ -1492,28 +1723,28 @@ RcppExport SEXP markov_model_mp_cpp(SEXP Data_p, SEXP var_path_p, SEXP var_conv_
  string var_null = Rcpp::as<string>(var_null_0);
  
  NumericVector order_0(order_p); 
- unsigned long long int order = Rcpp::as<unsigned long long int>(order_0);
+ unsigned long int order = Rcpp::as<unsigned long int>(order_0);
  
  NumericVector nsim_start_0(nsim_start_p); 
- unsigned long long int nsim_start = Rcpp::as<unsigned long long int>(nsim_start_0);
+ unsigned long int nsim_start = Rcpp::as<unsigned long int>(nsim_start_0);
  
  NumericVector max_step_0(max_step_p); 
- unsigned long long int max_step = Rcpp::as<unsigned long long int>(max_step_0); 
+ unsigned long int max_step = Rcpp::as<unsigned long int>(max_step_0); 
  
  NumericVector out_more_0(out_more_p); 
- unsigned long long int out_more = Rcpp::as<unsigned long long int>(out_more_0);
+ unsigned long int out_more = Rcpp::as<unsigned long int>(out_more_0);
  
  CharacterVector sep_0(sep_p); 
  string sep = Rcpp::as<string>(sep_0);
  
  NumericVector ncore_0(ncore_p); 
- unsigned long long int ncore = Rcpp::as<unsigned long long int>(ncore_0);
+ unsigned long int ncore = Rcpp::as<unsigned long int>(ncore_0);
 
  NumericVector nfold_0(nfold_p); 
- unsigned long long int nfold = Rcpp::as<unsigned long long int>(nfold_0); 
+ unsigned long int nfold = Rcpp::as<unsigned long int>(nfold_0); 
  
  NumericVector seed_0(seed_p); 
- unsigned long long int seed = Rcpp::as<unsigned long long int>(seed_0);  
+ unsigned long int seed = Rcpp::as<unsigned long int>(seed_0);  
 
  NumericVector conv_par_0(conv_par_p); 
  double conv_par = Rcpp::as<double>(conv_par_0);  
@@ -1522,7 +1753,7 @@ RcppExport SEXP markov_model_mp_cpp(SEXP Data_p, SEXP var_path_p, SEXP var_conv_
  double rate_step_sim = Rcpp::as<double>(rate_step_sim_0);   
  
  NumericVector verbose_0(verbose_p); 
- unsigned long long int verbose = Rcpp::as<unsigned long long int>(verbose_0);
+ unsigned long int verbose = Rcpp::as<unsigned long int>(verbose_0);
 
  //inp.b 
   
@@ -1618,6 +1849,8 @@ RcppExport SEXP markov_model_mp_cpp(SEXP Data_p, SEXP var_path_p, SEXP var_conv_
   path="";
   j=0;
   npassi=0;
+  start_pos=0;
+  end_pos=0;
      
   //medium.touch
   
@@ -1769,7 +2002,10 @@ RcppExport SEXP markov_model_mp_cpp(SEXP Data_p, SEXP var_path_p, SEXP var_conv_
  Fx S(nchannels_sim,nchannels_sim);
   
  Fx fV(nchannels_sim,l_vui);
-   
+ 
+ unsigned long int max_npassi; 
+ max_npassi=0; 
+ 
  for(i=0;i<lvy;i++){
      
   flg_next_path=0;
@@ -1861,7 +2097,9 @@ RcppExport SEXP markov_model_mp_cpp(SEXP Data_p, SEXP var_path_p, SEXP var_conv_
    }
    
   }//end while j<size
-      
+   
+  max_npassi=max(max_npassi,npassi);
+   
  }//end for 
  
  //out matrice di transizione
@@ -1881,30 +2119,18 @@ RcppExport SEXP markov_model_mp_cpp(SEXP Data_p, SEXP var_path_p, SEXP var_conv_
  }
     
  //SIMULAZIONI
-   
- unsigned long int max_npassi;
- long int id0=0;
-
- //#omp_get_thread_num()
-    
- if(max_step==0){
-  max_npassi=nchannels_sim*10;
- }else{
-  max_npassi=1e6;     
+     
+ if(max_step>0){
+  max_npassi=max_step;
  }
+   
  if(nsim_start==0){
   nsim_start=1e5;
  }
-     
- unsigned long int c=0,npassi0=0,k0=0,c_last=0,i0=0;
- vector<bool> C(nchannels,0);
- double sval0=0; 
- bool flg_exit=0;
-  
+       
  unsigned long int run;
  unsigned long int nch0; 
  double sn=0;
- double sm=0;
   
  vector< vector<double> > T(nfold,vector<double>(nchannels,0));
  vector< vector<double> > V(nfold,vector<double>(nchannels,0));
@@ -1924,6 +2150,8 @@ RcppExport SEXP markov_model_mp_cpp(SEXP Data_p, SEXP var_path_p, SEXP var_conv_
  vector<double> VV_fin(nch0);
  vector<double> vtmp1(nfold);
  vector<double> v_res_conv(nfold);
+ 
+ vector<double> v_inc_path(nfold);
     
  double max_res_conv=numeric_limits<double>::infinity();
  double min_res_conv;
@@ -1935,125 +2163,28 @@ RcppExport SEXP markov_model_mp_cpp(SEXP Data_p, SEXP var_path_p, SEXP var_conv_
 	
   min_res_conv=numeric_limits<double>::infinity(); 
 	
-  for(run=0; run<(unsigned long int) nfold; run++){
-	
-   std::mt19937 generator(seed+run);  
-   uniform_real_distribution<double> distribution(0,1);
-    
-   for(i0=0; i0<(unsigned long int) (nsim_start/nfold); i0++){
-       	        
-     c=0;
-     npassi0=0;
- 	    
-     for(k0=0; k0<nchannels; k0++){ //svuoto il vettore del flag canali visitati
-      C[k0]=0;
-     }
-    
-     C[c]=1; //assegno 1 al channel start
-     
- 	 flg_exit=0;
- 	
-     while((npassi0<=max_npassi) & (flg_exit==0)){ //interrompo quando raggiungo il massimo numero di passi
-      
-      c=S.sim(c,distribution(generator));
-      
-      if(c==nchannels_sim-2){ //se ho raggiunto lo stato conversion interrompo
-       flg_exit=1;
-      }else if(c==nchannels_sim-1){ //se ho raggiunto lo stato null interrompo
-       flg_exit=1;
-      }
-      
-      if(flg_exit==0){
-        if(order==1){
-          C[c]=1; //flaggo con 1 il canale visitato   
-        }else{       
-         for(k0=0; k0<order; k0++){
-           id0=(unsigned long int)mp_channels_sim_inv[c][k0];
-           if(id0>=0){
-            C[id0]=1;
-           }else{
-            break;     
-           }
-          }
-        }
-         
-        c_last=c; //salvo il canale visitato
-        ++npassi0;
-      }
-    
-     }//end while npassi0 
- 	
-     
-     if(c==nchannels_sim-2){ //solo se ho raggiunto la conversion assegno +1 ai canali interessati (se ho raggiunto il max numero di passi è come se fossi andato a null)
-      
-     nconv[run]=nconv[run]+1;//incremento le conversion
-      
-     //genero per il canale c_last un valore di conversion "sval0"
-     if(flg_var_value==1){
-      sval0=v_vui[fV.sim(c_last,distribution(generator))];
-     }   
-         
-     ssval[run]=ssval[run]+sval0;
-       
-     for (k0=0; k0<nchannels; k0++){
-       if(C[k0]==1){
-         T[run][k0]=T[run][k0]+1;
-        if(flg_var_value==1){
-          V[run][k0]=V[run][k0]+sval0;
-        }
-       }
-      }
-    
-     }//end if conv
-           
-   }//end for i
-     
-   T[run][0]=0; //pongo channel start = 0
-   T[run][nchannels-2]=0; //pongo channel conversion = 0 
-   T[run][nchannels-1]=0; //pongo channel null = 0 
-   
-   sn=0; 
-   for(k0=0;k0<lvy; k0++){
-    sn=sn+vc[k0];
-   }
-    
-   sm=0;
-   for(k0=0;k0<nchannels-1; k0++){
-    sm=sm+T[run][k0];
-   }
-   
-   for (k0=1; k0<(nch0+1); k0++){
-    if(sm>0){
-     TV[run][k0-1]=(T[run][k0]/sm)*sn;
-    }
-   }
-     
-   if(flg_var_value==1){
+  vector<unsigned long int> limits = bounds(ncore, nfold);
+
+  if(ncore==1){
+	  
+	W_markov_model_mp_1(seed, v_vui, lvy, vc, nch0, vv, nfold, nsim_start, mp_channels_sim_inv, max_npassi, nchannels_sim, order, flg_var_value, nchannels, S, fV, ref(nconv), ref(ssval), ref(T), ref(TV), ref(V), ref(VV), ref(v_inc_path), limits[0], limits[1]);
+	  
+  }else{
   
-    V[run][0]=0; //pongo channel start = 0
-    V[run][nchannels-2]=0; //pongo channel conversion = 0 
-    V[run][nchannels-1]=0; //pongo channel null = 0 
+   vector<thread> threads(ncore);
       
-    sn=0;
-    for(k0=0;k0<lvy; k0++){
-     sn=sn+vv[k0];
-    }
-    
-    sm=0;
-    for(k0=0;k0<nchannels-1; k0++){
-     sm=sm+V[run][k0];
-    }
-      
-    for(k0=1; k0<(nch0+1); k0++){
-     if(sm>0){
-      VV[run][k0-1]=(V[run][k0]/sm)*sn;
-     }
-    }
-     
+   //Launch ncore threads:	  
+   for(unsigned long int td=0; td<ncore; td++){
+    threads[td]=thread(W_markov_model_mp_1, seed, v_vui, lvy, vc, nch0, vv, nfold, nsim_start, mp_channels_sim_inv, max_npassi, nchannels_sim, order, flg_var_value, nchannels, S, fV, ref(nconv), ref(ssval), ref(T), ref(TV), ref(V), ref(VV), ref(v_inc_path), limits[td], limits[td+1]);
    }
+      
+   //Join the threads with the main thread
+   for(auto &t : threads){
+  	t.join();
+   } 
+	    
+  }
   
-  } //end for run
-    
   sn=0; 
   for(k=0;k<lvy; k++){
    sn=sn+vc[k];
@@ -2088,7 +2219,7 @@ RcppExport SEXP markov_model_mp_cpp(SEXP Data_p, SEXP var_path_p, SEXP var_conv_
    }  
   
   } 
-   
+     
   max_res_conv=0;
   for(run=0; run<nfold; run++){
 	  
@@ -2106,12 +2237,13 @@ RcppExport SEXP markov_model_mp_cpp(SEXP Data_p, SEXP var_path_p, SEXP var_conv_
    }
    
   }
-   
-  if(verbose==1){ 
+      
+  if(verbose==1){
    if(max_res_conv>conv_par){
-    Rcout << "Number of simulations: "+to_string(nsim_start) + " - Reaching convergence (wait...): "+ to_string(max_res_conv) << endl;
+    Rcout <<  "Number of simulations: "+ to_string(nsim_start) + " - Reaching convergence (wait...): " + f_print_perc(max_res_conv) + "% > " + f_print_perc(conv_par) + "%" << endl;
    }else{
-    Rcout << "Number of simulations: "+to_string(nsim_start) + " - Convergence reached: "+ to_string(max_res_conv) << endl;  
+	Rcout << endl;
+    Rcout << "Number of simulations: "+ to_string(nsim_start) + " - Convergence reached: " + f_print_perc(max_res_conv) + "% < " + f_print_perc(conv_par) + "%" << endl;  
    }
   }
   
@@ -2124,6 +2256,16 @@ RcppExport SEXP markov_model_mp_cpp(SEXP Data_p, SEXP var_path_p, SEXP var_conv_
   vchannels0[k-1]=vchannels[k];
  }
   
+ double succ_path=0;
+ for(k=0; k<nfold; k++){
+  succ_path=succ_path+(1-v_inc_path[k])/nfold;
+ }	  
+ if(verbose==1){ 
+  Rcout << endl;
+  Rcout << "Percentage of simulated paths that successfully end before maximum number of steps (" + to_string(max_npassi) + ") is reached: " << f_print_perc(succ_path) + "%" << endl;
+  Rcout << endl;
+ }
+ 
  if(flg_var_value==1){ 
  
   if(out_more==0){
@@ -2142,10 +2284,11 @@ RcppExport SEXP markov_model_mp_cpp(SEXP Data_p, SEXP var_path_p, SEXP var_conv_
     rVV[k-1]=V[run_min_res_conv][k]/ssval[run_min_res_conv];
    } 
       
-   List res1=List::create(Named("channel_name")=vchannels0, Named("total_conversions") = TV[run_min_res_conv], Named("total_conversion_value") = VV[run_min_res_conv], Named("total_conversions_run") = TV, Named("total_conversion_value_run") = VV );
+   // List res1=List::create(Named("channel_name")=vchannels0, Named("total_conversions") = TV[run_min_res_conv], Named("total_conversion_value") = VV[run_min_res_conv], Named("total_conversions_run") = TV, Named("total_conversion_value_run") = VV );
+   List res1=List::create(Named("channel_name")=vchannels0, Named("total_conversions") = TV[run_min_res_conv], Named("total_conversion_value") = VV[run_min_res_conv]);
    List res3=List::create(Named("channel_name")=vchannels0, Named("removal_effects_conversion") = rTV, Named("removal_effects_conversion_value") = rVV);
    return List::create(Named("result") = res1, Named("transition_matrix")=res_mtx, Named("removal_effects") = res3);
-  
+     
   } 
  
  }else{
@@ -2161,7 +2304,8 @@ RcppExport SEXP markov_model_mp_cpp(SEXP Data_p, SEXP var_path_p, SEXP var_conv_
     rTV[k-1]=T[run_min_res_conv][k]/nconv[run_min_res_conv];
    } 
    
-   List res1=List::create(Named("channel_name")=vchannels0, Named("total_conversions") = TV[run_min_res_conv], Named("total_conversions_run") = TV);
+   // List res1=List::create(Named("channel_name")=vchannels0, Named("total_conversions") = TV[run_min_res_conv], Named("total_conversions_run") = TV);
+   List res1=List::create(Named("channel_name")=vchannels0, Named("total_conversions") = TV[run_min_res_conv]);
    List res3=List::create(Named("channel_name")=vchannels0, Named("removal_effects") = rTV);
    return List::create(Named("result") = res1, Named("transition_matrix")=res_mtx, Named("removal_effects") = res3);
   
@@ -2193,13 +2337,13 @@ RcppExport SEXP transition_matrix_cpp(SEXP Data_p, SEXP var_path_p, SEXP var_con
  string var_null = Rcpp::as<string>(var_null_0);
  
  NumericVector order_0(order_p); 
- unsigned long long int order = Rcpp::as<unsigned long long int>(order_0);
+ unsigned long int order = Rcpp::as<unsigned long int>(order_0);
   
  CharacterVector sep_0(sep_p); 
  string sep = Rcpp::as<string>(sep_0);
 
  NumericVector flg_equal_0(flg_equal_p); 
- unsigned long long int flg_equal = Rcpp::as<unsigned long long int>(flg_equal_0);
+ unsigned long int flg_equal = Rcpp::as<unsigned long int>(flg_equal_0);
  
  //inp.b 
    
@@ -2267,6 +2411,8 @@ RcppExport SEXP transition_matrix_cpp(SEXP Data_p, SEXP var_path_p, SEXP var_con
   path="";
   j=0;
   npassi=0;
+  start_pos=0;
+  end_pos=0;
    
   //medium.touch
   

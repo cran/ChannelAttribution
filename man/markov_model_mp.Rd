@@ -4,16 +4,16 @@
 \alias{markov_model_mp}
 
 
-\title{Multiprocessing Markov model function.}
+\title{Markov model for the online attribution problem.}
 
-\description{This function is a multiprocessing version of markov_model function.}
+\description{Estimate a k-order Markov model from customer journey data. Differently from markov_model, this function iterates estimation until convergence is reached and enables multiprocessing.}
 
 
 
 \usage{
 markov_model_mp(Data, var_path, var_conv, var_value=NULL, var_null=NULL, 
              order=1, nsim_start=1e5, max_step=NULL, out_more=FALSE, sep=">", 
-             ncore=Inf, nfold=10, seed=0, conv_par=0.05, rate_step_sim=1.5, 
+             ncore=1, nfold=10, seed=0, conv_par=0.05, rate_step_sim=1.5, 
              verbose=TRUE)
 }
 
@@ -26,15 +26,15 @@ markov_model_mp(Data, var_path, var_conv, var_value=NULL, var_null=NULL,
   \item{var_null}{column name containing total paths that do not lead to conversions.}
   \item{order}{Markov Model order.}
   \item{nsim_start}{minimum number of simulations used in computation.}
-  \item{max_step}{maximum number of steps for a single simulated path.}
-  \item{out_more}{if TRUE returns the transition probabilities between channels and removal effects.}
+  \item{max_step}{maximum number of steps for a single simulated path. if NULL, it is the maximum number of steps found into Data.}
+  \item{out_more}{if TRUE, transition probabilities between channels and removal effects will be returned.}
   \item{sep}{separator between the channels.}
-  \item{ncore}{number of threads used in computation. Default is number of CPUs available.}
-  \item{nfold}{how many repetitions are used to verify if convergence is reached at each iteration.}
+  \item{ncore}{number of threads used in computation.}
+  \item{nfold}{how many repetitions are used to verify if convergence has been reached at each iteration.}
   \item{seed}{random seed. Giving this parameter the same value over different runs guarantees that results will not vary.}
   \item{conv_par}{convergence parameter for the algorithm. The estimation process ends when the percentage of variation of the results over different repetions is less than convergence parameter.}
   \item{rate_step_sim}{number of simulations used at each iteration is equal to the number of simulations used at previous iteration multiplied by rate_step_sim.}
-  \item{verbose}{show additional information about process convergence.}
+  \item{verbose}{if TRUE, additional information about process convergence will be shown.}
 }
 
 
@@ -53,7 +53,11 @@ library(ChannelAttribution)
 
 data(PathData) 
 
-markov_model_mp(Data,"path","total_conversions", var_null="total_null")
+markov_model_mp(Data, "path", "total_conversions", var_value="total_conversion_value")
+markov_model_mp(Data,"path","total_conversions", var_value="total_conversion_value",
+var_null="total_null")
+markov_model_mp(Data, "path", "total_conversions", var_value="total_conversion_value",
+var_null="total_null", out_more=TRUE)
 
 }
 

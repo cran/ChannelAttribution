@@ -13,7 +13,7 @@
 \usage{
 markov_model(Data, var_path, var_conv, var_value=NULL, var_null=NULL, 
              order=1, nsim=NULL, max_step=NULL, out_more=FALSE, sep=">", 
-             seed=NULL)
+             seed=NULL,verbose=TRUE)
 }
 
 
@@ -25,10 +25,11 @@ markov_model(Data, var_path, var_conv, var_value=NULL, var_null=NULL,
   \item{var_null}{column name containing total paths that do not lead to conversions.}
   \item{order}{Markov Model order.}
   \item{nsim}{total simulations from transition matrix.}
-  \item{max_step}{maximum number of steps for a single simulated path.}
-  \item{out_more}{if TRUE returns the transition probabilities between channels and removal effects.}
+  \item{max_step}{maximum number of steps for a single simulated path. if NULL, it is the maximum number of steps found into Data.}
+  \item{out_more}{if TRUE, transition probabilities between channels and removal effects will be shown.}
   \item{sep}{separator between the channels.}
   \item{seed}{random seed. Giving to this parameter the same value over different runs guarantee that results will not vary.}
+  \item{verbose}{if FALSE, warning message will be disabled.}
 }
 
 

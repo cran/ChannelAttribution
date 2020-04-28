@@ -23,7 +23,7 @@ transition_matrix(Data, var_path, var_conv, var_null, order=1, sep=">",
   \item{var_null}{column name containing paths that do not lead to conversions.}
   \item{order}{Markov Model order.}
   \item{sep}{separator between the channels.}
-  \item{flg_equal}{if TRUE transitions from a channel to itself are considered.}
+  \item{flg_equal}{if TRUE, transitions from a channel to itself will be considered.}
 }
 
 
