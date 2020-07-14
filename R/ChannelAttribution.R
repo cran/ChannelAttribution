@@ -1,3 +1,21 @@
+# ChannelAttribution: Markov model for online multi-channel attribution
+# Copyright (C) 2015 - 2020  Davide Altomare and David Loris <http://www.channelattribution.net>
+
+# ChannelAttribution is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+
+# ChannelAttribution is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+
+# You should have received a copy of the GNU General Public License
+# along with ChannelAttribution.  If not, see <http://www.gnu.org/licenses/>.
+
+print("Visit http://www.channelattribution.net for more information about ChannelAttribution")
+print("Function makov_model_mp has been renamed markov_model")
 
 heuristic_models=function(Data, var_path, var_conv, var_value=NULL, sep=">"){
 
@@ -35,71 +53,6 @@ heuristic_models=function(Data, var_path, var_conv, var_value=NULL, sep=">"){
  return(as.data.frame(res)) 
 
 }	
-
-
-markov_model=function(Data, var_path, var_conv, var_value=NULL, var_null=NULL, order=1, nsim=NULL, max_step=NULL, out_more=FALSE, sep=">", seed=NULL, verbose=TRUE){
-
- 
- if(!("data.frame"%in%class(Data)|"data.table"%in%class(Data))){
-  print("Data must be a data.frame or a data.table")
- } 
- 
- if(is.character(var_path)){
-	if(!var_path%in%names(Data)){
-	 print("var_path must be a column of Data")
-	}
- }else{
-  print("var_path must be a string")
- }
- if(is.character(var_conv)){
-	if(!var_conv%in%names(Data)){
-	 print("var_conv must be a column of Data")
-	}
- }else{
-  print("var_conv must be a string")
- }
- 
- if(!is.null(var_value)){
-  if(!var_value%in%names(Data)){
-   print("var_value must be a column of Data")
-  }
- }
- 
- if(!is.null(var_null)){
-  if(!var_null%in%names(Data)){
-   print("var_null must be a column of Data")
-  }
- }
- 
- if(order<1){stop("order must be >= 1")}
- if(!is.null(nsim)){if(nsim<1){stop("nsim must be >= 1")}}
- if(!is.null(max_step)){if(max_step<1){stop("max_step must be >= 1")}}
- if(!out_more%in%c(0,1)){stop("out_more must be FALSE or TRUE")}
- if(length(sep)>1){stop("sep must have length 1")}
- if(!is.null(seed)){if(seed<0){stop("seed must be >= 0")}}
- if(!verbose%in%c(0,1)){stop("verbose must be FALSE or TRUE")}
- 
- if(is.null(var_value)){var_value="0"}
- if(is.null(var_null)){var_null="0"}
- if(is.null(nsim)){nsim=0}
- if(is.null(max_step)){max_step=0}
- #if(!is.null(seed)){set.seed(seed)}
- if(is.null(seed)){seed=0}
- 
- if(verbose==TRUE){
-  warning("This function is deprecated and it could be removed from future versions. Use markov_model_mp instead. Disable this warning setting vebose=FALSE.") 
- }
-
- res=.Call("markov_model_cpp", Data, var_path, var_conv, var_value, var_null, order, nsim, max_step, out_more, sep, seed)
- 
- if(out_more==FALSE){
-  return(as.data.frame(res)) 
- }else{
-  return(list(result=as.data.frame(res$result),transition_matrix=as.data.frame(res$transition_matrix),removal_effects=as.data.frame(res$removal_effects)))
- }
-
-}	
-
 
 choose_order=function(Data, var_path, var_conv, var_null, max_order=10, sep=">", ncore=1, roc_npt=100, plot=TRUE){
  
@@ -159,7 +112,7 @@ choose_order=function(Data, var_path, var_conv, var_null, max_order=10, sep=">",
  
 }
 
-markov_model_mp=function(Data, var_path, var_conv, var_value=NULL, var_null=NULL, order=1, nsim_start=1e5, max_step=NULL, out_more=FALSE, sep=">", ncore=1, nfold=10, seed=0, conv_par=0.05, rate_step_sim=1.5, verbose=TRUE){
+markov_model=function(Data, var_path, var_conv, var_value=NULL, var_null=NULL, order=1, nsim_start=1e5, max_step=NULL, out_more=FALSE, sep=">", ncore=1, nfold=10, seed=0, conv_par=0.05, rate_step_sim=1.5, verbose=TRUE){
  
  
  if(!("data.frame"%in%class(Data)|"data.table"%in%class(Data))){
@@ -205,13 +158,15 @@ markov_model_mp=function(Data, var_path, var_conv, var_value=NULL, var_null=NULL
  if(conv_par<0){stop("conv_par must be > 0")}
  if(rate_step_sim<0){stop("rate_step_sim must be > 0")}
  if(!verbose%in%c(0,1)){stop("verbose must be FALSE or TRUE")}
+ 
+ if(nrow(Data[which(Data[var_conv]!=0),])==0){stop("Data must have at least one converting path")}
 
  if(is.null(var_value)){var_value="0"}
  if(is.null(var_null)){var_null="0"}
  if(is.null(max_step)){max_step=0}
  if(!is.null(seed)){set.seed(seed)}
  
- res=.Call("markov_model_mp_cpp", Data, var_path, var_conv, var_value, var_null, order, nsim_start, max_step, out_more, sep, ncore, nfold, seed, conv_par, rate_step_sim,verbose)
+ res=.Call("markov_model_cpp", Data, var_path, var_conv, var_value, var_null, order, nsim_start, max_step, out_more, sep, ncore, nfold, seed, conv_par, rate_step_sim,verbose)
  
  if(out_more==FALSE){
   return(as.data.frame(res)) 
@@ -312,7 +267,7 @@ auto_markov_model=function(Data, var_path, var_conv, var_null, var_value=NULL, m
  order=choose_order(Data, var_path, var_conv, var_null, max_order=max_order, sep=sep, ncore=ncore, roc_npt=roc_npt, plot=plot)
  order=order[['suggested_order']]
  
- res=markov_model_mp(Data, var_path, var_conv, var_value=var_value, var_null=var_null, order=order, nsim_start=nsim_start, max_step=max_step, out_more=out_more, sep=sep, ncore=ncore, nfold=nfold, seed=seed, conv_par=conv_par, rate_step_sim=rate_step_sim, verbose=verbose)
+ res=markov_model(Data, var_path, var_conv, var_value=var_value, var_null=var_null, order=order, nsim_start=nsim_start, max_step=max_step, out_more=out_more, sep=sep, ncore=ncore, nfold=nfold, seed=seed, conv_par=conv_par, rate_step_sim=rate_step_sim, verbose=verbose)
 
  if(out_more==FALSE){
   return(as.data.frame(res)) 

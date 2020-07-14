@@ -18,8 +18,8 @@ The package also contains a function that estimates three heuristic models (firs
 \tabular{ll}{
 Package: \tab ChannelAttribution\cr
 Type: \tab Package\cr
-Version: \tab 1.18\cr
-Date: \tab 2020-04-27\cr
+Version: \tab 2.0.0\cr
+Date: \tab 2020-07-07\cr
 License: \tab GPL (>= 2)\cr
 }
  Package contains functions for channel attribution in web marketing. 
@@ -32,7 +32,8 @@ Maintainer Davide Altomare <davide.altomare@gmail.com>
 }
 
 \references{
-Davide Altomare, David Loris (2015). \href{http://www.slideshare.net/adavide1982/markov-model-for-the-multichannel-attribution-problem}{Markov Model for the Online Multi-Channel Attribution Problem}. 
+
+[linked phrase](http://www.channelattribution.net)
 
 Eva Anderl, Ingo Becker, Florian v. Wangenheim, Jan H. Schumann. Mapping the Customer Journey (2014). A Graph-Based Framework for Online Attribution Modeling.
 }
