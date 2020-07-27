@@ -14,8 +14,15 @@
 # You should have received a copy of the GNU General Public License
 # along with ChannelAttribution.  If not, see <http://www.gnu.org/licenses/>.
 
-print("Visit http://www.channelattribution.net for more information about ChannelAttribution")
-print("Function makov_model_mp has been renamed markov_model")
+.v=packageVersion("ChannelAttribution")
+ 
+.onAttach = function(libname, pkgname) {
+
+ packageStartupMessage(paste0("ChannelAttribution ",.v))
+ packageStartupMessage("Visit www.channelattribution.net for more information about ChannelAttribution")
+ packageStartupMessage("Function makov_model_mp has been renamed markov_model")
+
+}
 
 heuristic_models=function(Data, var_path, var_conv, var_value=NULL, sep=">"){
 

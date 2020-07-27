@@ -1647,7 +1647,7 @@ RcppExport SEXP markov_model_cpp(SEXP Data_p, SEXP var_path_p, SEXP var_conv_p, 
   }else{
 	
    //removal effects conversion	
-   for(k=1; k<nch0; k++){
+   for(k=1; k<(nch0+1); k++){
     rTV[k-1]=T[run_min_res_conv][k]/nconv[run_min_res_conv];
    } 
 

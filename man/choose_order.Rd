@@ -35,7 +35,7 @@ choose_order(Data, var_path, var_conv, var_null, max_order=10, sep=">",
 \value{An object of \code{class} \code{List} with the estimated roc, auc and penalized auc.}
 
 \author{
-  Davide Altomare (\email{davide.altomare@gmail.com}).
+  Davide Altomare (\email{info@channelattribution.net}).
 }
 
 

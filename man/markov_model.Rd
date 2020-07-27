@@ -41,7 +41,7 @@ markov_model(Data, var_path, var_conv, var_value=NULL, var_null=NULL,
 \value{An object of \code{class} \code{data.frame} with the estimated number of conversions and the estimated conversion value attributed to each channel.}
 
 \author{
-  Davide Altomare (\email{davide.altomare@gmail.com}).
+  Davide Altomare (\email{info@channelattribution.net}).
 }
 
 

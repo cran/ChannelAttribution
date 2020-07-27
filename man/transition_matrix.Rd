@@ -30,7 +30,7 @@ transition_matrix(Data, var_path, var_conv, var_null, order=1, sep=">",
 \value{An object of \code{class} \code{List} containing a dataframe with channel names and a dataframe with the estimated transition matrix.}
 
 \author{
-  Davide Altomare (\email{davide.altomare@gmail.com}).
+  Davide Altomare (\email{info@channelattribution.net}).
 }
 
 
