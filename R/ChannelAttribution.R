@@ -1,5 +1,5 @@
 # ChannelAttribution: Markov model for online multi-channel attribution
-# Copyright (C) 2015 - 2020  Davide Altomare and David Loris <http://www.channelattribution.net>
+# Copyright (C) 2015 - 2021  Davide Altomare and David Loris <http://www.channelattribution.net>
 
 # ChannelAttribution is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -19,8 +19,7 @@
 .onAttach = function(libname, pkgname) {
 
  packageStartupMessage(paste0("ChannelAttribution ",.v))
- packageStartupMessage("Visit www.channelattribution.net for more information about ChannelAttribution")
- packageStartupMessage("Function makov_model_mp has been renamed markov_model")
+ packageStartupMessage("Looking for attribution at path level? Try ChannelAttributionPro! Visit www.channelattribution.net for more information.")
 
 }
 

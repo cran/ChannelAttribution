@@ -18,8 +18,8 @@ The package also contains a function that estimates three heuristic models (firs
 \tabular{ll}{
 Package: \tab ChannelAttribution\cr
 Type: \tab Package\cr
-Version: \tab 2.0.2\cr
-Date: \tab 2020-07-25\cr
+Version: \tab 2.0.4 \cr
+Date: \tab 2021-03-29 \cr
 License: \tab GPL (>= 2)\cr
 }
  Package contains functions for channel attribution in web marketing. 
@@ -33,9 +33,9 @@ Maintainer Davide Altomare <info@channelattribution.net>
 
 \references{
 
-\href{http://www.channelattribution.net}{ChannelAttribution Official Website}
+\href{https://www.channelattribution.net}{ChannelAttribution Official Website}
 
-\href{http://dx.doi.org/10.2139/ssrn.2343077}{Eva Anderl, Ingo Becker, Florian v. Wangenheim, Jan H. Schumann. Mapping the Customer Journey (2014)}
+\doi{10.2139/ssrn.2343077}{Eva Anderl, Ingo Becker, Florian v. Wangenheim, Jan H. Schumann. Mapping the Customer Journey (2014)}
 
 }
 

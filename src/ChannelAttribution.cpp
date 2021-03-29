@@ -1,5 +1,5 @@
 //ChannelAttribution: Markov model for online multi-channel attribution
-//Copyright (C) 2015 - 2020  Davide Altomare and David Loris <http://www.channelattribution.net>
+//Copyright (C) 2015 - 2021  Davide Altomare and David Loris <http://www.channelattribution.net>
 //
 //ChannelAttribution is free software: you can redistribute it and/or modify
 //it under the terms of the GNU General Public License as published by
@@ -487,7 +487,7 @@ void W_choose_order_1(vector<string> vy, unsigned long int lvy, vector<unsigned 
    np=np+vc[i]+vn[i];
   }
   
-  if(nnodes<lvy){
+  if(nnodes<np){
   
    nchannels_sim=0;
     
