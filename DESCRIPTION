@@ -1,16 +1,21 @@
 Package: ChannelAttribution
 Type: Package
 Title: Markov Model for Online Multi-Channel Attribution
-Version: 2.0.4
-Date: 2021-03-29
-Author: Davide Altomare, David Loris
-Maintainer: Davide Altomare <info@channelattribution.net>
+Version: 2.0.5
+Date: 2022-02-05
+Authors@R: c(
+  person("Davide", "Altomare", email = "info@channelattribution.io", role = c("cre", "aut")),
+  person("David", "Loris", email = "david@channelattribution.io", role = "aut")
+  )
+Maintainer: Davide Altomare <info@channelattribution.io>
 Description: Advertisers use a variety of online marketing channels to reach consumers and they want to know the degree each channel contributes to their marketing success. This is called online multi-channel attribution problem. This package contains a probabilistic algorithm for the attribution problem. The model uses a k-order Markov representation to identify structural correlations in the customer journey data. The package also contains three heuristic algorithms (first-touch, last-touch and linear-touch approach) for the same problem. The algorithms are implemented in C++.
 License: GPL-3 | file LICENSE
-URL: https://www.channelattribution.net
+URL: https://channelattribution.io
 LinkingTo: Rcpp, RcppArmadillo
 Imports: Rcpp
 NeedsCompilation: yes
-Packaged: 2021-03-29 07:53:09 UTC; root
+Packaged: 2022-02-04 23:18:11 UTC; davide
+Author: Davide Altomare [cre, aut],
+  David Loris [aut]
 Repository: CRAN
-Date/Publication: 2021-03-29 09:22:15 UTC
+Date/Publication: 2022-02-05 10:20:10 UTC
