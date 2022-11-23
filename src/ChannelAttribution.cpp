@@ -691,9 +691,9 @@ void W_choose_order_1(vector<string> vy, unsigned long int lvy, vector<unsigned 
     
     for(i=0;i<lvy;i++){
      
-     if((vprev[i]>=th) & (vc[i]>0)){
+     if((vprev[i]>=th) && (vc[i]>0)){
   	 tp=tp+vc[i];   
-     }else if((vprev[i]<th) & (vc[i]>0)){
+     }else if((vprev[i]<th) && (vc[i]>0)){
       fn=fn+vc[i];
      }
      

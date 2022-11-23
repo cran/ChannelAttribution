@@ -18,8 +18,8 @@ The package also contains a function that estimates three heuristic models (firs
 \tabular{ll}{
 Package: \tab ChannelAttribution\cr
 Type: \tab Package\cr
-Version: \tab 2.0.5 \cr
-Date: \tab 2022-02-05 \cr
+Version: \tab 2.0.6 \cr
+Date: \tab 2022-11-21 \cr
 License: \tab GPL (>= 2)\cr
 }
  Package contains functions for channel attribution in web marketing. 
