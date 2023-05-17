@@ -14,7 +14,7 @@ auto_markov_model(Data, var_path, var_conv, var_null, var_value=NULL,
              max_order=10, roc_npt=100, plot=FALSE, nsim_start=1e5, 
              max_step=NULL, out_more=FALSE, sep=">", 
              ncore=1, nfold=10, seed=0, conv_par=0.05, rate_step_sim=1.5, 
-             verbose=TRUE)
+             verbose=TRUE, flg_adv=TRUE)
 }
 
 \arguments{
@@ -36,6 +36,7 @@ auto_markov_model(Data, var_path, var_conv, var_null, var_value=NULL,
   \item{conv_par}{convergence parameter for the algorithm. The estimation process ends when the percentage of variation of the results over different repetitions is less than convergence parameter.}
   \item{rate_step_sim}{number of simulations used at each iteration is equal to the number of simulations used at previous iteration multiplied by rate_step_sim.}
   \item{verbose}{if TRUE, additional information about process convergence will be shown.}
+  \item{flg_adv}{if TRUE, ChannelAttribution Pro banner is printed.}
 }
 
 

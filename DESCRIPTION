@@ -1,8 +1,8 @@
 Package: ChannelAttribution
 Type: Package
 Title: Markov Model for Online Multi-Channel Attribution
-Version: 2.0.6
-Date: 2022-11-21
+Version: 2.0.7
+Date: 2023-05-17
 Authors@R: c(
   person("Davide", "Altomare", email = "info@channelattribution.io", role = c("cre", "aut")),
   person("David", "Loris", email = "david@channelattribution.io", role = "aut")
@@ -14,8 +14,8 @@ URL: https://channelattribution.io
 LinkingTo: Rcpp, RcppArmadillo
 Imports: Rcpp
 NeedsCompilation: yes
-Packaged: 2022-11-21 13:17:35 UTC; davide
+Packaged: 2023-05-17 18:54:06 UTC; davide
 Author: Davide Altomare [cre, aut],
   David Loris [aut]
 Repository: CRAN
-Date/Publication: 2022-11-23 16:00:06 UTC
+Date/Publication: 2023-05-17 19:20:02 UTC

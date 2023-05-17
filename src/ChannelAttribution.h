@@ -1,5 +1,5 @@
 //ChannelAttribution: Markov model for online multi-channel attribution
-//Copyright (C) 2015 - 2022  Davide Altomare and David Loris <https://channelattribution.io>
+//Copyright (C) 2015 - 2023  Davide Altomare and David Loris <https://channelattribution.io>
 //
 //ChannelAttribution is free software: you can redistribute it and/or modify
 //it under the terms of the GNU General Public License as published by

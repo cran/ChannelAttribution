@@ -14,7 +14,7 @@
 markov_model(Data, var_path, var_conv, var_value=NULL, var_null=NULL, 
              order=1, nsim_start=1e5, max_step=NULL, out_more=FALSE, sep=">", 
              ncore=1, nfold=10, seed=0, conv_par=0.05, rate_step_sim=1.5, 
-             verbose=TRUE)
+             verbose=TRUE, flg_adv=TRUE)
 }
 
 
@@ -35,6 +35,7 @@ markov_model(Data, var_path, var_conv, var_value=NULL, var_null=NULL,
   \item{conv_par}{convergence parameter for the algorithm. The estimation process ends when the percentage of variation of the results over different repetions is less than convergence parameter.}
   \item{rate_step_sim}{number of simulations used at each iteration is equal to the number of simulations used at previous iteration multiplied by rate_step_sim.}
   \item{verbose}{if TRUE, additional information about process convergence will be shown.}
+  \item{flg_adv}{if TRUE, ChannelAttribution Pro banner is printed.}
 }
 
 

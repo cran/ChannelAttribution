@@ -1,5 +1,5 @@
 # ChannelAttribution: Markov model for online multi-channel attribution
-# Copyright (C) 2015 - 2022  Davide Altomare and David Loris <https://channelattribution.io>
+# Copyright (C) 2015 - 2023  Davide Altomare and David Loris <https://channelattribution.io>
 
 # ChannelAttribution is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -19,11 +19,11 @@
 .onAttach = function(libname, pkgname) {
 
  packageStartupMessage(paste0("ChannelAttribution ",.v))
- packageStartupMessage("Looking for attribution at path level? Try ChannelAttributionPro! Visit https://channelattribution.io for more information.")
+ packageStartupMessage("*** Looking to run more advanced attribution? Try ChannelAttribution Pro for free! Visit https://channelattribution.io/product")
 
 }
 
-heuristic_models=function(Data, var_path, var_conv, var_value=NULL, sep=">"){
+heuristic_models=function(Data, var_path, var_conv, var_value=NULL, sep=">", flg_adv=TRUE){
 
  if(!("data.frame"%in%class(Data)|"data.table"%in%class(Data))){
   print("Data must be a data.frame or a data.table")
@@ -56,11 +56,15 @@ heuristic_models=function(Data, var_path, var_conv, var_value=NULL, sep=">"){
 
  res=.Call("heuristic_models_cpp", Data, var_path, var_conv, var_value, sep)
  
+ if(flg_adv==TRUE){
+  print("*** Looking to run more advanced attribution? Try ChannelAttribution Pro for free! Visit https://channelattribution.io/product")
+ }
+ 
  return(as.data.frame(res)) 
 
 }	
 
-choose_order=function(Data, var_path, var_conv, var_null, max_order=10, sep=">", ncore=1, roc_npt=100, plot=TRUE){
+choose_order=function(Data, var_path, var_conv, var_null, max_order=10, sep=">", ncore=1, roc_npt=100, plot=TRUE, flg_adv=TRUE){
  
  if(!("data.frame"%in%class(Data)|"data.table"%in%class(Data))){
   print("Data must be a data.frame or a data.table")
@@ -114,11 +118,15 @@ choose_order=function(Data, var_path, var_conv, var_null, max_order=10, sep=">",
  
  res[['suggested_order']]=best_order
  
+ if(flg_adv==TRUE){
+  print("*** Looking to run more advanced attribution? Try ChannelAttribution Pro for free! Visit https://channelattribution.io/product")
+ }
+ 
  return(res)
  
 }
 
-markov_model=function(Data, var_path, var_conv, var_value=NULL, var_null=NULL, order=1, nsim_start=1e5, max_step=NULL, out_more=FALSE, sep=">", ncore=1, nfold=10, seed=0, conv_par=0.05, rate_step_sim=1.5, verbose=TRUE){
+markov_model=function(Data, var_path, var_conv, var_value=NULL, var_null=NULL, order=1, nsim_start=1e5, max_step=NULL, out_more=FALSE, sep=">", ncore=1, nfold=10, seed=0, conv_par=0.05, rate_step_sim=1.5, verbose=TRUE, flg_adv=TRUE){
  
  
  if(!("data.frame"%in%class(Data)|"data.table"%in%class(Data))){
@@ -174,6 +182,10 @@ markov_model=function(Data, var_path, var_conv, var_value=NULL, var_null=NULL, o
  
  res=.Call("markov_model_cpp", Data, var_path, var_conv, var_value, var_null, order, nsim_start, max_step, out_more, sep, ncore, nfold, seed, conv_par, rate_step_sim,verbose)
  
+ if(flg_adv==TRUE){
+  print("*** Looking to run more advanced attribution? Try ChannelAttribution Pro for free! Visit https://channelattribution.io/product")
+ }
+ 
  if(out_more==FALSE){
   return(as.data.frame(res)) 
  }else{
@@ -183,7 +195,7 @@ markov_model=function(Data, var_path, var_conv, var_value=NULL, var_null=NULL, o
 }
  
  
-transition_matrix=function(Data, var_path, var_conv, var_null, order=1, sep=">", flg_equal=TRUE){
+transition_matrix=function(Data, var_path, var_conv, var_null, order=1, sep=">", flg_equal=TRUE, flg_adv=TRUE){
  
  if(!("data.frame"%in%class(Data)|"data.table"%in%class(Data))){
   print("Data must be a data.frame or a data.table")
@@ -218,12 +230,16 @@ transition_matrix=function(Data, var_path, var_conv, var_null, order=1, sep=">",
 
  res=.Call("transition_matrix_cpp", Data, var_path, var_conv, var_null, order, sep, flg_equal)
  
+ if(flg_adv==TRUE){
+  print("*** Looking to run more advanced attribution? Try ChannelAttribution Pro for free! Visit https://channelattribution.io/product")
+ }
+ 
  return(list(channels=data.frame(id=1:length(res$channels),channel_name=res$channels),transition_matrix=as.data.frame(res$transition_matrix)))
   
 }
  
  
-auto_markov_model=function(Data, var_path, var_conv, var_null, var_value=NULL, max_order=10, roc_npt=100, plot=FALSE, nsim_start=1e5, max_step=NULL, out_more=FALSE, sep=">", ncore=1, nfold=10, seed=0, conv_par=0.05, rate_step_sim=1.5, verbose=TRUE){
+auto_markov_model=function(Data, var_path, var_conv, var_null, var_value=NULL, max_order=10, roc_npt=100, plot=FALSE, nsim_start=1e5, max_step=NULL, out_more=FALSE, sep=">", ncore=1, nfold=10, seed=0, conv_par=0.05, rate_step_sim=1.5, verbose=TRUE, flg_adv=TRUE){
  
  if(!("data.frame"%in%class(Data)|"data.table"%in%class(Data))){
   print("Data must be a data.frame or a data.table")
@@ -270,10 +286,14 @@ auto_markov_model=function(Data, var_path, var_conv, var_null, var_value=NULL, m
  if(rate_step_sim<0){stop("rate_step_sim must be > 0")}
  if(!verbose%in%c(0,1)){stop("verbose must be FALSE or TRUE")}
  
- order=choose_order(Data, var_path, var_conv, var_null, max_order=max_order, sep=sep, ncore=ncore, roc_npt=roc_npt, plot=plot)
+ order=choose_order(Data, var_path, var_conv, var_null, max_order=max_order, sep=sep, ncore=ncore, roc_npt=roc_npt, plot=plot, flg_adv=FALSE)
  order=order[['suggested_order']]
  
- res=markov_model(Data, var_path, var_conv, var_value=var_value, var_null=var_null, order=order, nsim_start=nsim_start, max_step=max_step, out_more=out_more, sep=sep, ncore=ncore, nfold=nfold, seed=seed, conv_par=conv_par, rate_step_sim=rate_step_sim, verbose=verbose)
+ res=markov_model(Data, var_path, var_conv, var_value=var_value, var_null=var_null, order=order, nsim_start=nsim_start, max_step=max_step, out_more=out_more, sep=sep, ncore=ncore, nfold=nfold, seed=seed, conv_par=conv_par, rate_step_sim=rate_step_sim, verbose=verbose, flg_adv=FALSE)
+ 
+ if(flg_adv==TRUE){
+  print("*** Looking to run more advanced attribution? Try ChannelAttribution Pro for free! Visit https://channelattribution.io/product")
+ }
 
  if(out_more==FALSE){
   return(as.data.frame(res)) 
