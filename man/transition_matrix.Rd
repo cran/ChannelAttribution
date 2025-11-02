@@ -12,7 +12,7 @@
 
 \usage{
 transition_matrix(Data, var_path, var_conv, var_null, order=1, sep=">", 
-                  flg_equal=TRUE, flg_adv=TRUE)
+                  flg_equal=TRUE, flg_pro=TRUE)
 }
 
 
@@ -24,7 +24,7 @@ transition_matrix(Data, var_path, var_conv, var_null, order=1, sep=">",
   \item{order}{Markov Model order.}
   \item{sep}{separator between the channels.}
   \item{flg_equal}{if TRUE, transitions from a channel to itself will be considered.}
-  \item{flg_adv}{if TRUE, ChannelAttribution Pro banner is printed.}
+  \item{flg_pro}{if TRUE, ChannelAttribution Pro banner is printed.}
 }
 
 

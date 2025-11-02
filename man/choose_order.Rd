@@ -13,7 +13,7 @@
 \usage{
 
 choose_order(Data, var_path, var_conv, var_null, max_order=10, sep=">", 
-             ncore=1, roc_npt=100, plot=TRUE, flg_adv=TRUE)
+             ncore=1, roc_npt=100, plot=TRUE, flg_pro=TRUE)
 
 }
 
@@ -28,7 +28,7 @@ choose_order(Data, var_path, var_conv, var_null, max_order=10, sep=">",
   \item{ncore}{number of threads used in computation.}
   \item{roc_npt}{number of points used for approximating roc and auc.}
   \item{plot}{if TRUE, a plot with penalized auc with respect to order will be displayed.}
-  \item{flg_adv}{if TRUE, ChannelAttribution Pro banner is printed.}
+  \item{flg_pro}{if TRUE, ChannelAttribution Pro banner is printed.}
 }
 
 

@@ -11,7 +11,7 @@
 
 
 \usage{
-heuristic_models(Data, var_path, var_conv, var_value=NULL, sep=">", flg_adv=TRUE)
+heuristic_models(Data, var_path, var_conv, var_value=NULL, sep=">", flg_pro=TRUE)
 }
 
 
@@ -21,7 +21,7 @@ heuristic_models(Data, var_path, var_conv, var_value=NULL, sep=">", flg_adv=TRUE
   \item{var_conv}{column name containing total conversions.}
   \item{var_value}{column name containing total conversion value.}
   \item{sep}{separator between the channels.}
-  \item{flg_adv}{if TRUE, ChannelAttribution Pro banner is printed.}
+  \item{flg_pro}{if TRUE, ChannelAttribution Pro banner is printed.}
 }
 
 
