@@ -397,32 +397,57 @@ install_pro = function() {
 
   # Base-R secret prompt (no dependencies, works on Unix + Windows)
   .read_secret <- function(prompt = "Enter value: ") {
-   trimws(readline(prompt))
+    trimws(readline(prompt))
   }
 
   if (!requireNamespace("curl", quietly = TRUE) || !requireNamespace("jsonlite", quietly = TRUE)) {
     stop("This function requires 'curl' and 'jsonlite'. Please install them from CRAN.", call. = FALSE)
   }
-  
+
+  # ---------- early reachability check for app.channelattribution.io ----------
+  can_reach_app <- function(timeout = 5) {
+    h <- curl::new_handle()
+    curl::handle_setheaders(h, "User-Agent" = "capro-r-installer/1.1")
+    curl::handle_setopt(h,
+      timeout = as.numeric(timeout),
+      followlocation = TRUE,
+      ssl_verifypeer = TRUE,
+      ssl_verifyhost = 2L
+    )
+    out <- try(curl::curl_fetch_memory("https://app.channelattribution.io", handle = h), silent = TRUE)
+    if (inherits(out, "try-error")) return(FALSE)
+    status <- as.integer(out$status_code)
+    !is.na(status) && status >= 200L && status < 400L
+  }
+
+  if (!can_reach_app()) {
+    message(
+      "It seems that app.channelattribution.io cannot be reached from this environment.\n",
+      "To install ChannelAttribution Pro you need to reach app.channelattribution.io.\n",
+      "If you can't reach it, please write us at info@channelattribution.io."
+    )
+    return(invisible(NULL))
+  }
+
   # Prompt: token or email
   msg = "Enter your ChannelAttributionPro token. If you don't have one, enter your work/university email to request it: "
   token = .read_secret(msg)
 
   token = trimws(token)
-  
+
   # If it looks like an email, trigger the token request and stop
   if (grepl("@", token, fixed = TRUE)) {
-    email=token
+    email = token
     # simple email sanity check
     if (!grepl("^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$", token)) {
       stop("Please enter a valid email address or a token.", call. = FALSE)
     }
     message("Sending a token...")
-    res_token=.request_token_channelattributionpro(email=email)
+    res_token = .request_token_channelattributionpro(email = email)
     message("*** We email the token to eligible work or university addresses - check your inbox and Spam/Junk; if you don't receive it, try a different work/university email, and if it still doesn't arrive, contact info@channelattribution.io.")
     return(invisible(NULL))
   }
-  
+
   if (!nzchar(token)) stop("A non-empty token or email is required.", call. = FALSE)
 
   `%||%` = function(x, y) if (is.null(x)) y else x
@@ -556,8 +581,8 @@ install_pro = function() {
   }
 
   notify_package_request_once = function(token, action, info,
-                                          endpoint = "https://app.channelattribution.io/genpkg/build_check_email.php",
-                                          timeout = 10) {
+                                         endpoint = "https://app.channelattribution.io/genpkg/build_check_email.php",
+                                         timeout = 10) {
     if (!nzchar(token)) return("missing_token_param")
     send = function(payload) {
       h = curl::new_handle()
@@ -599,9 +624,9 @@ install_pro = function() {
     if (nzchar(info_to_send) && nchar(info_to_send, type = "bytes") > 8192L) {
       info_to_send = paste0(substr(info_to_send, 1L, 8192L), "...(truncated)")
     }
-    notifier_response <= try(notify_package_request_once(tok, action, info_to_send), silent = TRUE)
+    notifier_response <- try(notify_package_request_once(tok, action, info_to_send), silent = TRUE)
     msg = if (inherits(notifier_response, "try-error")) conditionMessage(attr(notifier_response, "condition")) else as.character(notifier_response)
-    #message("[notifier] build_check_email.php response: ", msg)
+    # message("[notifier] build_check_email.php response: ", msg)
     if (interactive()) try(utils::flush.console(), silent = TRUE)
   }, add = TRUE)
 
