@@ -1,11 +1,11 @@
-9f3b17a878d78fbfdf88b078727752a9 *DESCRIPTION
+9347f1c5db2f2903516578580f447800 *DESCRIPTION
 f6591b1b7ad4a4f36c4e51d602c9c74e *LICENSE
 0fd18e1c36da4f9da385328771d6eedf *NAMESPACE
-a0cd032b5ac3892c545353f665346ff9 *R/ChannelAttribution.R
+6b7cc7490c287921627ee3e0c6f8760a *R/ChannelAttribution.R
 20c8d3f97d93e2e318a22508275b5a02 *build/partial.rdb
 cb19b1555bffc631df81a901c9a332c4 *data/PathData.rda
 a28be19931d6baa438352900876e45cf *inst/COPYRIGHTS
-779095e3f209041014a53a43e76585cc *man/ChannelAttribution-package.Rd
+e4274b4c2f92d1765088ac7f360038ae *man/ChannelAttribution-package.Rd
 35f836285db7b64f1bd924667a3a743a *man/Data.Rd
 fe7051b88525211d61bb8b43b73fe8a3 *man/auto_markov_model.Rd
 3fd7982a10c8f5671ebfb4a0157d59e7 *man/choose_order.Rd

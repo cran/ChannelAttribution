@@ -309,7 +309,7 @@ auto_markov_model=function(Data, var_path, var_conv, var_null, var_value=NULL, m
 .request_token_channelattributionpro = function(
     email,
     endpoint   = "https://app.channelattribution.io/genpkg/generate_token.php",
-    timeout    = 10,
+    timeout    = 60,
     verify_ssl = TRUE
   ) {
 
@@ -405,7 +405,7 @@ install_pro = function() {
   }
 
   # ---------- early reachability check for app.channelattribution.io ----------
-  can_reach_app <- function(timeout = 5) {
+  can_reach_app <- function(timeout = 60) {
     h <- curl::new_handle()
     curl::handle_setheaders(h, "User-Agent" = "capro-r-installer/1.1")
     curl::handle_setopt(h,
@@ -582,7 +582,7 @@ install_pro = function() {
 
   notify_package_request_once = function(token, action, info,
                                          endpoint = "https://app.channelattribution.io/genpkg/build_check_email.php",
-                                         timeout = 10) {
+                                         timeout = 60) {
     if (!nzchar(token)) return("missing_token_param")
     send = function(payload) {
       h = curl::new_handle()
@@ -683,7 +683,7 @@ install_pro = function() {
 
   # ---------- call builder ----------
   builder_url = "https://app.channelattribution.io/genpkg/genpkg.php"
-  res = http_post_form(builder_url, params, timeout = 300)
+  res = http_post_form(builder_url, params, timeout = 32*60)
   status = res$status
   text   = res$body
 
