@@ -316,7 +316,7 @@ auto_markov_model=function(Data, var_path, var_conv, var_null, var_value=NULL, m
     # Basic email validation (simple but effective for most cases)
     is_valid_email = function(x) {
       is.character(x) && length(x) == 1L && nzchar(x) &&
-        grepl("^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$", x)
+        grepl("^[^@[:space:]]+@[^@[:space:]]+\\.[^@[:space:]]+$", x)
     }
     if (!is_valid_email(email)) {
       stop("Please enter a valid, non-empty email address (e.g., john.black@company.com).", call. = FALSE)
@@ -439,7 +439,7 @@ install_pro = function() {
   if (grepl("@", token, fixed = TRUE)) {
     email = token
     # simple email sanity check
-    if (!grepl("^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$", token)) {
+    if (!grepl("^[^@[:space:]]+@[^@[:space:]]+\\.[^@[:space:]]+$", token)) {
       stop("Please enter a valid email address or a token.", call. = FALSE)
     }
     message("Sending a token...")
